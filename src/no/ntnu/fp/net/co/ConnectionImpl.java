@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -30,7 +31,7 @@ import no.ntnu.fp.net.cl.KtnDatagram.Flag;
  * of the functionality, leaving message passing and error handling to this
  * implementation.
  * 
- * @author Sebjørn Birkeland and Stein Jakob Nordbø
+ * @author Sebjï¿½rn Birkeland and Stein Jakob Nordbï¿½
  * @see no.ntnu.fp.net.co.Connection
  * @see no.ntnu.fp.net.cl.ClSocket
  */
@@ -46,7 +47,9 @@ public class ConnectionImpl extends AbstractConnection {
      *            - the local port to associate with this connection
      */
     public ConnectionImpl(int myPort) {
-        throw new NotImplementedException();
+        
+        usedPorts.put( myPort, Boolean.TRUE );
+        this.myPort = myPort;
     }
 
     private String getIPv4Address() {
@@ -83,7 +86,21 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#accept()
      */
     public Connection accept() throws IOException, SocketTimeoutException {
-        throw new NotImplementedException();
+        
+        receivePacket( true );
+        
+        /* Calculates the new port number */
+        Random randomGenerator = new Random();
+        int portInt = randomGenerator.nextInt();
+        while( usedPorts.containsKey( portInt ) ){
+            portInt = randomGenerator.nextInt( 64000 );
+        }
+        
+        sendAck(lastDataPacketSent, true);
+        receiveAck();
+        
+        return new ConnectionImpl( portInt );
+ //       throw new NotImplementedException();
     }
 
     /**
