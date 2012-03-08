@@ -124,7 +124,17 @@ public class ConnectionImpl extends AbstractConnection {
      * @see no.ntnu.fp.net.co.Connection#send(String)
      */
     public void send(String msg) throws ConnectException, IOException {
-        throw new NotImplementedException();
+        int attempts = 0;
+        while( attempts < 5 ){
+            KtnDatagram packet = constructDataPacket( msg );
+            
+            KtnDatagram ack = sendDataPacketWithRetransmit( packet );
+            if( ack != null ){
+                return;
+            }
+            attempts++;
+        }
+        throw new IOException( "Link broken" );
     }
 
     /**
