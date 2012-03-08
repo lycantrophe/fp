@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -80,7 +82,11 @@ public class ConnectionImpl extends AbstractConnection {
         this.remoteAddress = remoteAddress.toString();
         this.remotePort = remotePort;
         
-        sendDataPacketWithRetransmit( syn );
+        try {
+            simplySendPacket( syn );
+        } catch (ClException ex) {
+            Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         KtnDatagram ack = receiveAck();
         sendAck( ack, false );
