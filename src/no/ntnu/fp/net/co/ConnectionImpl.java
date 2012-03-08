@@ -23,55 +23,50 @@ import no.ntnu.fp.net.cl.KtnDatagram;
 import no.ntnu.fp.net.cl.KtnDatagram.Flag;
 
 /**
- * Implementation of the Connection-interface. <br>
- * <br>
- * This class implements the behaviour in the methods specified in the interface
+ * Implementation of the Connection-interface. <br> <br> This class implements
+ * the behaviour in the methods specified in the interface
  * {@link Connection} over the unreliable, connectionless network realised in
  * {@link ClSocket}. The base class, {@link AbstractConnection} implements some
  * of the functionality, leaving message passing and error handling to this
  * implementation.
- * 
+ *
  * @author Sebj�rn Birkeland and Stein Jakob Nordb�
  * @see no.ntnu.fp.net.co.Connection
  * @see no.ntnu.fp.net.cl.ClSocket
  */
 public class ConnectionImpl extends AbstractConnection {
 
-    /** Keeps track of the used ports for each server port. */
+    /**
+     * Keeps track of the used ports for each server port.
+     */
     private static Map<Integer, Boolean> usedPorts = Collections.synchronizedMap(new HashMap<Integer, Boolean>());
 
     /**
      * Initialise initial sequence number and setup state machine.
-     * 
-     * @param myPort
-     *            - the local port to associate with this connection
+     *
+     * @param myPort - the local port to associate with this connection
      */
     public ConnectionImpl(int myPort) {
-        
-        usedPorts.put( myPort, Boolean.TRUE );
+
         this.myPort = myPort;
     }
 
     private String getIPv4Address() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             return "127.0.0.1";
         }
     }
 
     /**
      * Establish a connection to a remote location.
-     * 
-     * @param remoteAddress
-     *            - the remote IP-address to connect to
-     * @param remotePort
-     *            - the remote portnumber to connect to
-     * @throws IOException
-     *             If there's an I/O error.
-     * @throws java.net.SocketTimeoutException
-     *             If timeout expires before connection is completed.
+     *
+     * @param remoteAddress - the remote IP-address to connect to
+     * @param remotePort - the remote portnumber to connect to
+     * @throws IOException If there's an I/O error.
+     * @throws java.net.SocketTimeoutException If timeout expires before
+     * connection is completed.
      * @see Connection#connect(InetAddress, int)
      */
     public void connect(InetAddress remoteAddress, int remotePort) throws IOException,
@@ -81,37 +76,38 @@ public class ConnectionImpl extends AbstractConnection {
 
     /**
      * Listen for, and accept, incoming connections.
-     * 
+     *
      * @return A new ConnectionImpl-object representing the new connection.
      * @see Connection#accept()
      */
     public Connection accept() throws IOException, SocketTimeoutException {
+
+        KtnDatagram packet = receivePacket( true );
+
+        /*
+         * Calculates the new port number
+         */
         
-        receivePacket( true );
-        
-        /* Calculates the new port number */
         Random randomGenerator = new Random();
-        int portInt = randomGenerator.nextInt();
-        while( usedPorts.containsKey( portInt ) ){
-            portInt = randomGenerator.nextInt( 64000 );
+        // TODO: Find smarter way to assign new port numbers that does not degrade (so much)
+        int portInt = randomGenerator.nextInt(64000);
+        while (usedPorts.containsKey(portInt)) {
+            portInt = randomGenerator.nextInt(64000);
         }
-        
-        sendAck(lastDataPacketSent, true);
+
+        sendAck(packet, true);
         receiveAck();
-        
-        return new ConnectionImpl( portInt );
- //       throw new NotImplementedException();
+
+        usedPorts.put(portInt, Boolean.TRUE);
+        return new ConnectionImpl(portInt);
     }
 
     /**
      * Send a message from the application.
-     * 
-     * @param msg
-     *            - the String to be sent.
-     * @throws ConnectException
-     *             If no connection exists.
-     * @throws IOException
-     *             If no ACK was received.
+     *
+     * @param msg - the String to be sent.
+     * @throws ConnectException If no connection exists.
+     * @throws IOException If no ACK was received.
      * @see AbstractConnection#sendDataPacketWithRetransmit(KtnDatagram)
      * @see no.ntnu.fp.net.co.Connection#send(String)
      */
@@ -121,7 +117,7 @@ public class ConnectionImpl extends AbstractConnection {
 
     /**
      * Wait for incoming data.
-     * 
+     *
      * @return The received data's payload as a String.
      * @see Connection#receive()
      * @see AbstractConnection#receivePacket(boolean)
@@ -133,7 +129,7 @@ public class ConnectionImpl extends AbstractConnection {
 
     /**
      * Close the connection.
-     * 
+     *
      * @see Connection#close()
      */
     public void close() throws IOException {
@@ -143,9 +139,8 @@ public class ConnectionImpl extends AbstractConnection {
     /**
      * Test a packet for transmission errors. This function should only called
      * with data or ACK packets in the ESTABLISHED state.
-     * 
-     * @param packet
-     *            Packet to test.
+     *
+     * @param packet Packet to test.
      * @return true if packet is free of errors, false otherwise.
      */
     protected boolean isValid(KtnDatagram packet) {
