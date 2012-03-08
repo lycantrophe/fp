@@ -71,7 +71,16 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void connect(InetAddress remoteAddress, int remotePort) throws IOException,
             SocketTimeoutException {
-        throw new NotImplementedException();
+        
+        KtnDatagram syn = constructInternalPacket( Flag.SYN );
+        syn.setDest_addr( remoteAddress.toString() );
+        syn.setDest_port( remotePort );
+        
+        
+        sendDataPacketWithRetransmit( syn );
+        
+        KtnDatagram ack = receiveAck();
+        sendAck( ack, false );
     }
 
     /**
