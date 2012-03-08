@@ -77,6 +77,9 @@ public class ConnectionImpl extends AbstractConnection {
         syn.setDest_port( remotePort );
         
         
+        this.remoteAddress = remoteAddress.toString();
+        this.remotePort = remotePort;
+        
         sendDataPacketWithRetransmit( syn );
         
         KtnDatagram ack = receiveAck();
@@ -142,7 +145,32 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#close()
      */
     public void close() throws IOException {
-        throw new NotImplementedException();
+        
+        if ( this.disconnectRequest != null ) {
+            sendAck( this.disconnectRequest, false );
+        }
+        
+        KtnDatagram fin = constructInternalPacket( Flag.FIN );
+        fin.setDest_addr( remoteAddress );
+        fin.setDest_port( remotePort );
+        
+        sendDataPacketWithRetransmit( fin );
+        
+        if( this.disconnectRequest != null ){
+            receiveAck();
+            // TODO: Check if it is a correct ACK?
+            return;
+        }
+        
+        boolean gotFin = false;
+        
+        while( !gotFin ){
+            KtnDatagram packet = receivePacket( true );
+            if ( packet.getFlag() == Flag.FIN ){
+                gotFin = true;
+                sendAck( packet, false );
+            }
+        }
     }
 
     /**
