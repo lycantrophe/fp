@@ -142,16 +142,21 @@ public class ConnectionImpl extends AbstractConnection {
 
         this.state = State.LISTEN;
 
-        KtnDatagram firstPacket = receivePacket(true);
+        //KtnDatagram firstPacket = receivePacket(true);
 
-        if (firstPacket == null || firstPacket.getFlag() != Flag.SYN) {
-            this.state = State.CLOSED;
-            throw new IOException("Wrong flag. Got " + firstPacket.getFlag());
+        KtnDatagram firstPacket = null;
+        while (this.state == State.LISTEN) {
+            firstPacket = receivePacket(true);
+            if (firstPacket != null && firstPacket.getFlag() == Flag.SYN) {
+                this.state = State.SYN_RCVD;
+                remotePort = firstPacket.getSrc_port();
+                remoteAddress = firstPacket.getSrc_addr();
+            }
         }
 
-        state = State.SYN_RCVD;
-        remotePort = firstPacket.getSrc_port();
-        remoteAddress = firstPacket.getSrc_addr();
+        //state = State.SYN_RCVD;
+        // remotePort = firstPacket.getSrc_port();
+        // remoteAddress = firstPacket.getSrc_addr();
 
         try {
             myAddress = InetAddress.getLocalHost().getHostAddress();
