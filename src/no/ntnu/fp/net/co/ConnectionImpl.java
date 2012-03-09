@@ -63,6 +63,17 @@ public class ConnectionImpl extends AbstractConnection {
         }
     }
 
+    private ConnectionImpl(String myAddress, int myPort, String remoteAddress, int remotePort, int nextSequenceNo) {
+        super();
+        this.myAddress = myAddress;
+        this.myPort = myPort;
+        this.remoteAddress = remoteAddress;
+        this.remotePort = remotePort;
+        this.nextSequenceNo = nextSequenceNo;
+        this.state = State.ESTABLISHED;
+        System.out.println("New conn!");
+    }
+
     /**
      * Establish a connection to a remote location.
      *
@@ -78,8 +89,6 @@ public class ConnectionImpl extends AbstractConnection {
 
         this.remoteAddress = remoteAddress.getHostAddress();
         this.remotePort = remotePort;
-        
-        
 
         try {
             myAddress = InetAddress.getLocalHost().getHostAddress();
@@ -87,11 +96,14 @@ public class ConnectionImpl extends AbstractConnection {
             e.printStackTrace();
         }
 
-        /* Constructs the port and sends the SYN package */
+        /*
+         * Constructs the port and sends the SYN package
+         */
         myPort = 1024 + (int) (Math.random() * 64000);
-        usedPorts.put(myPort, null);
+        usedPorts.put(myPort, true);
+
         KtnDatagram first = constructInternalPacket(Flag.SYN);
-        
+
         try {
             simplySendPacket(first);
             this.state = State.SYN_SENT;
@@ -126,8 +138,7 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#accept()
      */
     public Connection accept() throws IOException, SocketTimeoutException {
-        
-        
+
         this.state = State.LISTEN;
         /*
          * Calculates the new port number
@@ -171,10 +182,8 @@ public class ConnectionImpl extends AbstractConnection {
         this.remoteAddress = ack.getSrc_addr();
 
         usedPorts.put(portInt, Boolean.TRUE);
-        int tempPort = this.myPort;
-        this.myPort = portInt;
 
-        Connection newConn = new ConnectionImpl(tempPort);
+        Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
         return newConn;
     }
 
@@ -188,8 +197,13 @@ public class ConnectionImpl extends AbstractConnection {
      * @see no.ntnu.fp.net.co.Connection#send(String)
      */
     public void send(String msg) throws ConnectException, IOException {
+
+        if (this.state != State.ESTABLISHED) {
+            throw new IOException("Not connected");
+        }
+
         int attempts = 0;
-        while (attempts < 5) {
+        while (true) {
             KtnDatagram packet = constructDataPacket(msg);
 
             KtnDatagram ack = sendDataPacketWithRetransmit(packet);
@@ -198,7 +212,7 @@ public class ConnectionImpl extends AbstractConnection {
             }
             attempts++;
         }
-        throw new IOException("Link broken");
+        //  throw new IOException("Link broken");
     }
 
     /**
@@ -210,11 +224,13 @@ public class ConnectionImpl extends AbstractConnection {
      * @see AbstractConnection#sendAck(KtnDatagram, boolean)
      */
     public String receive() throws ConnectException, IOException {
-        
+
         KtnDatagram packet = receivePacket(false);
+        Log.writeToLog("Received: " + packet.getPayload().toString(), "testServer");
+        Log.writeToLog("Port: " + packet.getSrc_port() + "Addr: " + packet.getSrc_addr(), "testServer");
         sendAck(packet, false);
         return packet.getPayload().toString();
-        
+
     }
 
     /**
@@ -226,29 +242,46 @@ public class ConnectionImpl extends AbstractConnection {
 
         if (this.disconnectRequest != null) {
             sendAck(this.disconnectRequest, false);
+            this.state = State.CLOSE_WAIT;
         }
 
         KtnDatagram fin = constructInternalPacket(Flag.FIN);
-        fin.setDest_addr(remoteAddress);
-        fin.setDest_port(remotePort);
+        //fin.setDest_addr(remoteAddress);
+        //fin.setDest_port(remotePort);
 
-        sendDataPacketWithRetransmit(fin);
+        try {
+
+            simplySendPacket(fin);
+            this.state = State.FIN_WAIT_1;
+            receiveAck();
+
+        } catch (ClException e) {
+            close();
+        }
 
         if (this.disconnectRequest != null) {
+
             receiveAck();
             // TODO: Check if it is a correct ACK?
+            this.state = State.CLOSED;
             return;
         }
 
+        this.state = State.FIN_WAIT_2;
         boolean gotFin = false;
 
-        while (!gotFin) {
-            KtnDatagram packet = receivePacket(true);
-            if (packet.getFlag() == Flag.FIN) {
+        KtnDatagram packet = receivePacket(true);
+        if (packet == null) {
+        } else if (packet.getFlag() == Flag.FIN) {
+            try {
                 gotFin = true;
                 sendAck(packet, false);
+            } catch (ConnectException e) {
+                System.out.println("Could not send ACK after FIN");
+                e.printStackTrace();
             }
         }
+        this.state = State.CLOSED;
     }
 
     /**
