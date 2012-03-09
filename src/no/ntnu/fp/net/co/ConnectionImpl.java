@@ -144,9 +144,8 @@ public class ConnectionImpl extends AbstractConnection {
 
         KtnDatagram firstPacket = receivePacket(true);
 
-        if (firstPacket == null) {
-            throw new IOException("No SYN package");
-        } else if (firstPacket.getFlag() != Flag.SYN) {
+        if (firstPacket == null || firstPacket.getFlag() != Flag.SYN) {
+            this.state = State.CLOSED;
             throw new IOException("Wrong flag. Got " + firstPacket.getFlag());
         }
 
@@ -160,12 +159,7 @@ public class ConnectionImpl extends AbstractConnection {
             e.printStackTrace();
         }
 
-        try {
-            sendAck(firstPacket, true);
-        } catch (ConnectException e) {
-            System.out.println("Could not send ack");
-            return accept();
-        }
+        sendAck(firstPacket, true);
 
         while (this.state != State.ESTABLISHED) {
 
@@ -174,9 +168,11 @@ public class ConnectionImpl extends AbstractConnection {
             /*
              * TODO: Figure out a way to handle sequence numbers
              */
-            this.state = State.ESTABLISHED;
-            this.remotePort = ack.getSrc_port();
-            this.remoteAddress = ack.getSrc_addr();
+            if (ack != null) {
+                this.state = State.ESTABLISHED;
+                this.remotePort = ack.getSrc_port();
+                this.remoteAddress = ack.getSrc_addr();
+            }
         }
 
         usedPorts.put(myPort, Boolean.TRUE);
