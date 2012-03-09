@@ -208,6 +208,7 @@ public class ConnectionImpl extends AbstractConnection {
         if (this.state != State.ESTABLISHED) {
             throw new IOException("Not connected");
         }
+        /* Sends the data package with retransmission enabled */
         try {
             sendDataPacketWithRetransmit(constructDataPacket(msg));
         } catch (IOException e) {
@@ -224,12 +225,10 @@ public class ConnectionImpl extends AbstractConnection {
      * @see AbstractConnection#sendAck(KtnDatagram, boolean)
      */
     public String receive() throws ConnectException, IOException {
+        /* Receives the packet and returns an ACK */
         KtnDatagram packet = receivePacket(false);
-        Log.writeToLog("Received: " + packet.getPayload().toString(), "testServer");
-        Log.writeToLog("Port: " + packet.getSrc_port() + "Addr: " + packet.getSrc_addr(), "testServer");
         sendAck(packet, false);
         return packet.getPayload().toString();
-
     }
 
     /**
