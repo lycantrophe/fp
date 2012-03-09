@@ -252,6 +252,7 @@ public class ConnectionImpl extends AbstractConnection {
 
         packet = receivePacket(false);
 
+
         if (this.state != State.ESTABLISHED) {
             throw new IOException("Tried to receive in a not connected state");
         }
@@ -336,7 +337,7 @@ public class ConnectionImpl extends AbstractConnection {
         /*
          * Handles a wrongly sequenced ACK
          */
-        if (ack != null && ack.getSeq_nr() < this.nextSequenceNo) {
+        if (ack != null && ack.getSeq_nr() != this.nextSequenceNo) {
             this.state = State.ESTABLISHED;
             close();
             return;
