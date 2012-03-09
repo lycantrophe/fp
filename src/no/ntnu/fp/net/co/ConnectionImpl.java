@@ -116,11 +116,11 @@ public class ConnectionImpl extends AbstractConnection {
         if (second != null) {
             Log.writeToLog("Status: SYN sendt.", "ConnectionImpl");
         }
-        if (second == null) {
+        else if (second == null) {
             second = receiveAck();
         }
-        if (second != null && second.getFlag() == Flag.SYN_ACK) {
-            sendAck(second, false);
+        else if ( second != null && second.getFlag() == Flag.SYN_ACK ) {
+            sendAck( second, false );
             Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
         } else {
             throw new IOException("Timeout: mottok aldri SYN_ACK");
@@ -177,9 +177,16 @@ public class ConnectionImpl extends AbstractConnection {
             return accept();
         }
 
-        KtnDatagram ack = receiveAck();
-        this.remotePort = ack.getSrc_port();
-        this.remoteAddress = ack.getSrc_addr();
+        while (this.state != State.ESTABLISHED) {
+
+            KtnDatagram ack = receiveAck();
+
+            if (ack.getSeq_nr() == nextSequenceNo) {
+                this.state = State.ESTABLISHED;
+                this.remotePort = ack.getSrc_port();
+                this.remoteAddress = ack.getSrc_addr();
+            }
+        }
 
         usedPorts.put(portInt, Boolean.TRUE);
 
@@ -204,9 +211,8 @@ public class ConnectionImpl extends AbstractConnection {
 
         KtnDatagram packet = constructDataPacket(msg);
         try {
-        sendDataPacketWithRetransmit(packet);
-        }
-        catch( IOException e ){
+            sendDataPacketWithRetransmit(packet);
+        } catch (IOException e) {
             throw new IOException("Link broken");
         }
     }
@@ -244,13 +250,12 @@ public class ConnectionImpl extends AbstractConnection {
         KtnDatagram fin = constructInternalPacket(Flag.FIN);
         //fin.setDest_addr(remoteAddress);
         //fin.setDest_port(remotePort);
-
+        
         try {
-
             simplySendPacket(fin);
             this.state = State.FIN_WAIT_1;
             receiveAck();
-
+            
         } catch (ClException e) {
             close();
         }
