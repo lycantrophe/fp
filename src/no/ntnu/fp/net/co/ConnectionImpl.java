@@ -146,22 +146,18 @@ public class ConnectionImpl extends AbstractConnection {
 
         this.state = State.LISTEN;
 
-        //KtnDatagram firstPacket = receivePacket(true);
-
+        /* Loops and listens for a connection until it gets one */
         KtnDatagram firstPacket = null;
         while (this.state == State.LISTEN) {
             firstPacket = receivePacket(true);
             if (firstPacket != null && firstPacket.getFlag() == Flag.SYN) {
+                /* SYN received - setting information and changing state */
                 this.state = State.SYN_RCVD;
                 remotePort = firstPacket.getSrc_port();
                 remoteAddress = firstPacket.getSrc_addr();
             }
         }
-
-        //state = State.SYN_RCVD;
-        // remotePort = firstPacket.getSrc_port();
-        // remoteAddress = firstPacket.getSrc_addr();
-
+        
         try {
             myAddress = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
@@ -170,8 +166,7 @@ public class ConnectionImpl extends AbstractConnection {
 
         sendAck(firstPacket, true);
 
-        while (this.state != State.ESTABLISHED) {
-
+        /* Waits for the ACK to return. Gives it two attempts before it shuts down */
             KtnDatagram ack = receiveAck();
 
             /*
@@ -182,10 +177,13 @@ public class ConnectionImpl extends AbstractConnection {
                 this.remotePort = ack.getSrc_port();
                 this.remoteAddress = ack.getSrc_addr();
             }
-        }
+            else {
+                return accept();
+            }
 
         usedPorts.put(myPort, Boolean.TRUE);
 
+        /* Reserves the port and creates the connection */
         Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
         //this.state = State.CLOSED;
         return newConn;
