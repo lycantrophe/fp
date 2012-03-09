@@ -117,7 +117,9 @@ public class ConnectionImpl extends AbstractConnection {
             Log.writeToLog("Status: SYN sendt.", "ConnectionImpl");
         } else if (second == null) {
             second = receiveAck();
-        } else if (second != null && second.getFlag() == Flag.SYN_ACK) {
+        }
+        
+        if (second != null && second.getFlag() == Flag.SYN_ACK) {
             sendAck(second, false);
             Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
         } else {
