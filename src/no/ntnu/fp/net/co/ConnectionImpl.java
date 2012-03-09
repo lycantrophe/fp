@@ -196,7 +196,7 @@ public class ConnectionImpl extends AbstractConnection {
         if (ack == null) {
             this.state = State.LISTEN;
             return accept();
-        } else if (ack != null ) {
+        } else if (ack != null) {
             this.state = State.ESTABLISHED;
             this.remotePort = ack.getSrc_port();
             this.remoteAddress = ack.getSrc_addr();
@@ -249,17 +249,15 @@ public class ConnectionImpl extends AbstractConnection {
          * Receives the packet and returns an ACK
          */
         KtnDatagram packet = null;
-        try {
-            packet = receivePacket( false );
+
+        packet = receivePacket(false);
+
+        if (this.state != State.ESTABLISHED) {
+            throw new IOException("Tried to receive in a not connected state");
         }
-        catch( EOFException e ){
-            close();
-        }
-        
-        if( this.state != State.ESTABLISHED ){
-            throw new IOException( "Tried to receive in a not connected state" );
-        }
-        /* Tests the incoming packages for validity */
+        /*
+         * Tests the incoming packages for validity
+         */
         if (isValid(packet)) {
             sendAck(packet, false);
             return packet.getPayload().toString();
@@ -298,7 +296,7 @@ public class ConnectionImpl extends AbstractConnection {
                 this.state = State.LAST_ACK;
                 simplySendPacket(fin);
                 KtnDatagram ack = receiveAck();
-                while (ack != null ) {
+                while (ack != null) {
                     /*
                      * Got wrong ACK
                      */
