@@ -280,7 +280,7 @@ public class ConnectionImpl extends AbstractConnection {
 
         KtnDatagram ack = receiveAck();
 
-        if (ack == null && ack.getSeq_nr() == this.nextSequenceNo) {
+        if (ack != null && ack.getSeq_nr() == this.nextSequenceNo) {
             this.state = State.ESTABLISHED;
             close();
             return;
