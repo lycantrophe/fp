@@ -309,7 +309,7 @@ public class ConnectionImpl extends AbstractConnection {
                  */
             }
 
-            this.state = State.CLOSED;
+            this.state = State.TIME_WAIT;
             return;
         }
 
