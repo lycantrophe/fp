@@ -78,6 +78,8 @@ public class ConnectionImpl extends AbstractConnection {
 
         this.remoteAddress = remoteAddress.getHostAddress();
         this.remotePort = remotePort;
+        
+        
 
         try {
             myAddress = InetAddress.getLocalHost().getHostAddress();
@@ -85,16 +87,14 @@ public class ConnectionImpl extends AbstractConnection {
             e.printStackTrace();
         }
 
+        /* Constructs the port and sends the SYN package */
         myPort = 1024 + (int) (Math.random() * 64000);
-
         usedPorts.put(myPort, null);
-
-
         KtnDatagram first = constructInternalPacket(Flag.SYN);
-        Log.writeToLog("Tilstand: SYN_SENT", "ConnectionImpl");
         
         try {
             simplySendPacket(first);
+            this.state = State.SYN_SENT;
         } catch (ClException ex) {
             Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -126,8 +126,8 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#accept()
      */
     public Connection accept() throws IOException, SocketTimeoutException {
-
-
+        
+        
         this.state = State.LISTEN;
         /*
          * Calculates the new port number
@@ -144,7 +144,7 @@ public class ConnectionImpl extends AbstractConnection {
         KtnDatagram firstPacket = receivePacket(true);
 
         if (firstPacket == null) {
-            throw new IOException("Got no package");
+            throw new IOException("No SYN package");
         } else if (firstPacket.getFlag() != Flag.SYN) {
             throw new IOException("Wrong flag. Got " + firstPacket.getFlag());
         }
@@ -210,9 +210,11 @@ public class ConnectionImpl extends AbstractConnection {
      * @see AbstractConnection#sendAck(KtnDatagram, boolean)
      */
     public String receive() throws ConnectException, IOException {
+        
         KtnDatagram packet = receivePacket(false);
         sendAck(packet, false);
         return packet.getPayload().toString();
+        
     }
 
     /**
