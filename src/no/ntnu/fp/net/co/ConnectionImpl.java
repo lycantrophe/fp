@@ -49,8 +49,10 @@ public class ConnectionImpl extends AbstractConnection {
      * @param myPort - the local port to associate with this connection
      */
     public ConnectionImpl(int myPort) {
-
+        super();
         this.myPort = myPort;
+        this.myAddress = getIPv4Address();
+        usedPorts.put(new Integer(myPort), true);
     }
 
     private String getIPv4Address() {
@@ -73,23 +75,48 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void connect(InetAddress remoteAddress, int remotePort) throws IOException,
             SocketTimeoutException {
-        
-        KtnDatagram syn = constructInternalPacket( Flag.SYN );
-        syn.setDest_addr( remoteAddress.toString() );
-        syn.setDest_port( remotePort );
-        
-        
-        this.remoteAddress = remoteAddress.toString();
+
+        this.remoteAddress = remoteAddress.getHostAddress();
         this.remotePort = remotePort;
+
+        try {
+            myAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        myPort = 1024 + (int) (Math.random() * 64000);
+
+        usedPorts.put(myPort, null);
+
+
+        KtnDatagram first = constructInternalPacket(Flag.SYN);
+        Log.writeToLog("Tilstand: SYN_SENT", "ConnectionImpl");
         
         try {
-            simplySendPacket( syn );
+            simplySendPacket(first);
         } catch (ClException ex) {
             Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        KtnDatagram ack = receiveAck();
-        sendAck( ack, false );
+
+        KtnDatagram second = receiveAck();
+
+        if (second != null) {
+            Log.writeToLog("Status: SYN sendt.", "ConnectionImpl");
+        }
+        if (second == null) {
+            second = receiveAck();
+        }
+        if (second != null && second.getFlag() == Flag.SYN_ACK) {
+            sendAck(second, false);
+            Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
+        } else {
+            throw new IOException("Timeout: mottok aldri SYN_ACK");
+        }
+
+        this.remotePort = second.getSrc_port();
+        this.remoteAddress = second.getSrc_addr();
+        this.state = State.ESTABLISHED;
     }
 
     /**
@@ -100,12 +127,11 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public Connection accept() throws IOException, SocketTimeoutException {
 
-        KtnDatagram packet = receivePacket( true );
 
+        this.state = State.LISTEN;
         /*
          * Calculates the new port number
          */
-        
         Random randomGenerator = new Random();
         // TODO: Find smarter way to assign new port numbers that does not degrade (so much)
         int portInt = randomGenerator.nextInt(64000);
@@ -113,11 +139,43 @@ public class ConnectionImpl extends AbstractConnection {
             portInt = randomGenerator.nextInt(64000);
         }
 
-        sendAck(packet, true);
-        receiveAck();
+        portInt = myPort;
+
+        KtnDatagram firstPacket = receivePacket(true);
+
+        if (firstPacket == null) {
+            throw new IOException("Got no package");
+        } else if (firstPacket.getFlag() != Flag.SYN) {
+            throw new IOException("Wrong flag. Got " + firstPacket.getFlag());
+        }
+
+        state = State.SYN_RCVD;
+        remotePort = firstPacket.getSrc_port();
+        remoteAddress = firstPacket.getSrc_addr();
+
+        try {
+            myAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            sendAck(firstPacket, true);
+        } catch (ConnectException e) {
+            System.out.println("Could not send ack");
+            return accept();
+        }
+
+        KtnDatagram ack = receiveAck();
+        this.remotePort = ack.getSrc_port();
+        this.remoteAddress = ack.getSrc_addr();
 
         usedPorts.put(portInt, Boolean.TRUE);
-        return new ConnectionImpl(portInt);
+        int tempPort = this.myPort;
+        this.myPort = portInt;
+
+        Connection newConn = new ConnectionImpl(tempPort);
+        return newConn;
     }
 
     /**
@@ -131,16 +189,16 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void send(String msg) throws ConnectException, IOException {
         int attempts = 0;
-        while( attempts < 5 ){
-            KtnDatagram packet = constructDataPacket( msg );
-            
-            KtnDatagram ack = sendDataPacketWithRetransmit( packet );
-            if( ack != null ){
+        while (attempts < 5) {
+            KtnDatagram packet = constructDataPacket(msg);
+
+            KtnDatagram ack = sendDataPacketWithRetransmit(packet);
+            if (ack != null) {
                 return;
             }
             attempts++;
         }
-        throw new IOException( "Link broken" );
+        throw new IOException("Link broken");
     }
 
     /**
@@ -152,8 +210,8 @@ public class ConnectionImpl extends AbstractConnection {
      * @see AbstractConnection#sendAck(KtnDatagram, boolean)
      */
     public String receive() throws ConnectException, IOException {
-        KtnDatagram packet = receivePacket( false );
-        sendAck( packet, false );
+        KtnDatagram packet = receivePacket(false);
+        sendAck(packet, false);
         return packet.getPayload().toString();
     }
 
@@ -163,30 +221,30 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#close()
      */
     public void close() throws IOException {
-        
-        if ( this.disconnectRequest != null ) {
-            sendAck( this.disconnectRequest, false );
+
+        if (this.disconnectRequest != null) {
+            sendAck(this.disconnectRequest, false);
         }
-        
-        KtnDatagram fin = constructInternalPacket( Flag.FIN );
-        fin.setDest_addr( remoteAddress );
-        fin.setDest_port( remotePort );
-        
-        sendDataPacketWithRetransmit( fin );
-        
-        if( this.disconnectRequest != null ){
+
+        KtnDatagram fin = constructInternalPacket(Flag.FIN);
+        fin.setDest_addr(remoteAddress);
+        fin.setDest_port(remotePort);
+
+        sendDataPacketWithRetransmit(fin);
+
+        if (this.disconnectRequest != null) {
             receiveAck();
             // TODO: Check if it is a correct ACK?
             return;
         }
-        
+
         boolean gotFin = false;
-        
-        while( !gotFin ){
-            KtnDatagram packet = receivePacket( true );
-            if ( packet.getFlag() == Flag.FIN ){
+
+        while (!gotFin) {
+            KtnDatagram packet = receivePacket(true);
+            if (packet.getFlag() == Flag.FIN) {
                 gotFin = true;
-                sendAck( packet, false );
+                sendAck(packet, false);
             }
         }
     }
