@@ -172,13 +172,18 @@ public class ConnectionImpl extends AbstractConnection {
             /*
              * TODO: Figure out a way to handle sequence numbers
              */
-            if (ack != null) {
+            if( ack == null ){
+                ack = receiveAck();
+            }
+            /* Should consider a better behaviour */
+            if( ack == null ){
+                this.state = State.LISTEN;
+                return accept();
+            }
+            else if (ack != null) {
                 this.state = State.ESTABLISHED;
                 this.remotePort = ack.getSrc_port();
                 this.remoteAddress = ack.getSrc_addr();
-            }
-            else {
-                return accept();
             }
 
         usedPorts.put(myPort, Boolean.TRUE);
