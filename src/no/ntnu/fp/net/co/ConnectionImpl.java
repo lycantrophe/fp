@@ -196,7 +196,7 @@ public class ConnectionImpl extends AbstractConnection {
         if (ack == null) {
             this.state = State.LISTEN;
             return accept();
-        } else if (ack != null) {
+        } else if (ack != null ) {
             this.state = State.ESTABLISHED;
             this.remotePort = ack.getSrc_port();
             this.remoteAddress = ack.getSrc_addr();
@@ -249,8 +249,15 @@ public class ConnectionImpl extends AbstractConnection {
          * Receives the packet and returns an ACK
          */
         KtnDatagram packet = receivePacket(false);
-        sendAck(packet, false);
-        return packet.getPayload().toString();
+        if( this.state != State.ESTABLISHED ){
+            throw new IOException( "Tried to receive in a not connected state" );
+        }
+        /* Tests the incoming packages for validity */
+        if (isValid(packet)) {
+            sendAck(packet, false);
+            return packet.getPayload().toString();
+        }
+        return receive();
     }
 
     /**
@@ -318,8 +325,12 @@ public class ConnectionImpl extends AbstractConnection {
 
         KtnDatagram ack = receiveAck();
 
-        /* Receives the ACK */
-        /* Handles a wrongly sequenced ACK */
+        /*
+         * Receives the ACK
+         */
+        /*
+         * Handles a wrongly sequenced ACK
+         */
         if (ack != null && ack.getSeq_nr() < this.nextSequenceNo) {
             this.state = State.ESTABLISHED;
             close();
@@ -327,7 +338,9 @@ public class ConnectionImpl extends AbstractConnection {
         }
 
         this.state = State.FIN_WAIT_2;
-        /* Receives FIN */
+        /*
+         * Receives FIN
+         */
         KtnDatagram packet = receivePacket(true);
         if (packet == null) {
         } else if (packet.getFlag() == Flag.FIN) {
