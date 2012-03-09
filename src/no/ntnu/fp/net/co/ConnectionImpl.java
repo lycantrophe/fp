@@ -121,14 +121,15 @@ public class ConnectionImpl extends AbstractConnection {
 
         if (second != null && second.getFlag() == Flag.SYN_ACK) {
             sendAck(second, false);
+            this.state = State.ESTABLISHED;
             Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
         } else {
+            this.state = State.CLOSED;
             throw new IOException("Timeout: mottok aldri SYN_ACK");
         }
 
         this.remotePort = second.getSrc_port();
         this.remoteAddress = second.getSrc_addr();
-        this.state = State.ESTABLISHED;
     }
 
     /**
@@ -170,17 +171,16 @@ public class ConnectionImpl extends AbstractConnection {
 
             KtnDatagram ack = receiveAck();
 
-            if (ack.getSeq_nr() == nextSequenceNo) {
-                this.state = State.ESTABLISHED;
-                this.remotePort = ack.getSrc_port();
-                this.remoteAddress = ack.getSrc_addr();
-            }
+            /* TODO: Figure out a way to handle sequence numbers */
+            this.state = State.ESTABLISHED;
+            this.remotePort = ack.getSrc_port();
+            this.remoteAddress = ack.getSrc_addr();
         }
 
         usedPorts.put(myPort, Boolean.TRUE);
 
         Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
-        this.state = State.CLOSED;
+        //this.state = State.CLOSED;
         return newConn;
     }
 
@@ -198,12 +198,10 @@ public class ConnectionImpl extends AbstractConnection {
         if (this.state != State.ESTABLISHED) {
             throw new IOException("Not connected");
         }
-        KtnDatagram packet = constructDataPacket(msg);
-        try{ 
-        sendDataPacketWithRetransmit(packet);
-        }
-        catch( IOException e ) {
-            e.printStackTrace();
+        try {
+            sendDataPacketWithRetransmit(constructDataPacket(msg));
+        } catch (IOException e) {
+            throw new IOException("Broken link");
         }
     }
 
@@ -230,6 +228,7 @@ public class ConnectionImpl extends AbstractConnection {
      * @see Connection#close()
      */
     public void close() throws IOException {
+        Log.writeToLog("Close called", "Server");
 
         if (this.state == State.CLOSED) {
             return;
@@ -273,6 +272,8 @@ public class ConnectionImpl extends AbstractConnection {
             simplySendPacket(fin);
             this.state = State.FIN_WAIT_1;
             this.disconnectSeqNo = fin.getSeq_nr();
+
+
         } catch (ClException ex) {
             Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
