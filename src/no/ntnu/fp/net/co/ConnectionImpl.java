@@ -203,12 +203,12 @@ public class ConnectionImpl extends AbstractConnection {
         }
 
         KtnDatagram packet = constructDataPacket(msg);
-
-        KtnDatagram ack = sendDataPacketWithRetransmit(packet);
-        if (ack != null) {
-            return;
+        try {
+        sendDataPacketWithRetransmit(packet);
         }
-        throw new IOException("Link broken");
+        catch( IOException e ){
+            throw new IOException("Link broken");
+        }
     }
 
     /**
