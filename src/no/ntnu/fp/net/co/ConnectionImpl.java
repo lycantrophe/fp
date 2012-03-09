@@ -171,7 +171,9 @@ public class ConnectionImpl extends AbstractConnection {
 
             KtnDatagram ack = receiveAck();
 
-            /* TODO: Figure out a way to handle sequence numbers */
+            /*
+             * TODO: Figure out a way to handle sequence numbers
+             */
             this.state = State.ESTABLISHED;
             this.remotePort = ack.getSrc_port();
             this.remoteAddress = ack.getSrc_addr();
@@ -309,6 +311,26 @@ public class ConnectionImpl extends AbstractConnection {
      * @return true if packet is free of errors, false otherwise.
      */
     protected boolean isValid(KtnDatagram packet) {
-        throw new NotImplementedException();
+        if (packet.getSrc_port() != remotePort) {
+            return false;
+        }
+
+        if ((packet.getSrc_addr() + ".").equals(remoteAddress)) {
+            return false;
+        }
+
+        if (packet.getChecksum() != packet.calculateChecksum()) {
+            return false;
+        }
+
+        if (lastValidPacketReceived != null && packet.getSeq_nr() == lastValidPacketReceived.getSeq_nr()) {
+            return false;
+        }
+
+        if (lastValidPacketReceived != null && packet.getSeq_nr() - 1 != lastValidPacketReceived.getSeq_nr()) {
+            return false;
+        }
+
+        return true;
     }
 }
