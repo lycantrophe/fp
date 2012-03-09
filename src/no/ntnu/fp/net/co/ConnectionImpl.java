@@ -115,12 +115,10 @@ public class ConnectionImpl extends AbstractConnection {
 
         if (second != null) {
             Log.writeToLog("Status: SYN sendt.", "ConnectionImpl");
-        }
-        else if (second == null) {
+        } else if (second == null) {
             second = receiveAck();
-        }
-        else if ( second != null && second.getFlag() == Flag.SYN_ACK ) {
-            sendAck( second, false );
+        } else if (second != null && second.getFlag() == Flag.SYN_ACK) {
+            sendAck(second, false);
             Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
         } else {
             throw new IOException("Timeout: mottok aldri SYN_ACK");
@@ -242,40 +240,66 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void close() throws IOException {
 
+        if (this.state == State.CLOSED) {
+            return;
+        }
+
         if (this.disconnectRequest != null) {
+            /*
+             * Got FIN, sending ACK
+             */
             sendAck(this.disconnectRequest, false);
             this.state = State.CLOSE_WAIT;
-        }
 
-        KtnDatagram fin = constructInternalPacket(Flag.FIN);
-        //fin.setDest_addr(remoteAddress);
-        //fin.setDest_port(remotePort);
-        
-        try {
-            simplySendPacket(fin);
-            this.state = State.FIN_WAIT_1;
-            receiveAck();
+            /*
+             * Sending FIN, waiting for ACK
+             */
+            KtnDatagram fin = constructInternalPacket(Flag.FIN);
+            this.disconnectSeqNo = fin.getSeq_nr();
+
+            try {
+                simplySendPacket(fin);
+                this.state = State.CLOSE_WAIT;
+                KtnDatagram ack = receiveAck();
+                while (ack != null && ack.getSeq_nr() < this.disconnectSeqNo) {
+                    /*
+                     * Got wrong ACK
+                     */
+                    ack = receiveAck();
+                }
+            } catch (ClException e) {
+                /*
+                 * Do nothing
+                 */
+            }
             
-        } catch (ClException e) {
-            close();
-        }
-
-        if (this.disconnectRequest != null) {
-
-            receiveAck();
-            // TODO: Check if it is a correct ACK?
             this.state = State.CLOSED;
             return;
         }
 
+        KtnDatagram fin = constructInternalPacket(Flag.FIN);
+        try {
+            simplySendPacket(fin);
+            this.state = State.FIN_WAIT_1;
+            this.disconnectSeqNo = fin.getSeq_nr();
+        } catch (ClException ex) {
+            Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        KtnDatagram ack = receiveAck();
+
+        if (ack == null && ack.getSeq_nr() == this.nextSequenceNo) {
+            this.state = State.ESTABLISHED;
+            close();
+            return;
+        }
+
         this.state = State.FIN_WAIT_2;
-        boolean gotFin = false;
 
         KtnDatagram packet = receivePacket(true);
         if (packet == null) {
         } else if (packet.getFlag() == Flag.FIN) {
             try {
-                gotFin = true;
                 sendAck(packet, false);
             } catch (ConnectException e) {
                 System.out.println("Could not send ACK after FIN");
