@@ -87,6 +87,7 @@ public class ConnectionImpl extends AbstractConnection {
     public void connect(InetAddress remoteAddress, int remotePort) throws IOException,
             SocketTimeoutException {
 
+        /* Sets necessary addressing info */
         this.remoteAddress = remoteAddress.getHostAddress();
         this.remotePort = remotePort;
 
@@ -102,30 +103,33 @@ public class ConnectionImpl extends AbstractConnection {
         myPort = 1024 + (int) (Math.random() * 64000);
         usedPorts.put(myPort, true);
 
+        /* Creats and sends the SYN request */
         KtnDatagram first = constructInternalPacket(Flag.SYN);
 
         try {
             simplySendPacket(first);
             this.state = State.SYN_SENT;
         } catch (ClException ex) {
-            Logger.getLogger(ConnectionImpl.class.getName()).log(Level.SEVERE, null, ex);
+            
         }
 
+        /* Expects and tries to receive an ACK */
+        /* Tries twice before giving up */
         KtnDatagram second = receiveAck();
 
         if (second != null) {
-            Log.writeToLog("Status: SYN sendt.", "ConnectionImpl");
+            
         } else if (second == null) {
             second = receiveAck();
         }
 
+        /* SYN_ACK received, connection set up */
         if (second != null && second.getFlag() == Flag.SYN_ACK) {
             sendAck(second, false);
             this.state = State.ESTABLISHED;
-            Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
         } else {
             this.state = State.CLOSED;
-            throw new IOException("Timeout: mottok aldri SYN_ACK");
+            throw new IOException("Timeout: Never received SYN_ACK");
         }
 
         this.remotePort = second.getSrc_port();
