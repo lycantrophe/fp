@@ -118,7 +118,7 @@ public class ConnectionImpl extends AbstractConnection {
         } else if (second == null) {
             second = receiveAck();
         }
-        
+
         if (second != null && second.getFlag() == Flag.SYN_ACK) {
             sendAck(second, false);
             Log.writeToLog("Tilstand: ESTABLISHED.", "ConnectionImpl");
@@ -140,17 +140,6 @@ public class ConnectionImpl extends AbstractConnection {
     public Connection accept() throws IOException, SocketTimeoutException {
 
         this.state = State.LISTEN;
-        /*
-         * Calculates the new port number
-         */
-        Random randomGenerator = new Random();
-        // TODO: Find smarter way to assign new port numbers that does not degrade (so much)
-        int portInt = randomGenerator.nextInt(64000);
-        while (usedPorts.containsKey(portInt)) {
-            portInt = randomGenerator.nextInt(64000);
-        }
-
-        portInt = myPort;
 
         KtnDatagram firstPacket = receivePacket(true);
 
@@ -188,9 +177,10 @@ public class ConnectionImpl extends AbstractConnection {
             }
         }
 
-        usedPorts.put(portInt, Boolean.TRUE);
+        usedPorts.put(myPort, Boolean.TRUE);
 
         Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
+        this.state = State.CLOSED;
         return newConn;
     }
 
@@ -208,12 +198,12 @@ public class ConnectionImpl extends AbstractConnection {
         if (this.state != State.ESTABLISHED) {
             throw new IOException("Not connected");
         }
-
         KtnDatagram packet = constructDataPacket(msg);
-        try {
-            sendDataPacketWithRetransmit(packet);
-        } catch (IOException e) {
-            throw new IOException("Link broken");
+        try{ 
+        sendDataPacketWithRetransmit(packet);
+        }
+        catch( IOException e ) {
+            e.printStackTrace();
         }
     }
 
@@ -226,7 +216,6 @@ public class ConnectionImpl extends AbstractConnection {
      * @see AbstractConnection#sendAck(KtnDatagram, boolean)
      */
     public String receive() throws ConnectException, IOException {
-
         KtnDatagram packet = receivePacket(false);
         Log.writeToLog("Received: " + packet.getPayload().toString(), "testServer");
         Log.writeToLog("Port: " + packet.getSrc_port() + "Addr: " + packet.getSrc_addr(), "testServer");
@@ -274,7 +263,7 @@ public class ConnectionImpl extends AbstractConnection {
                  * Do nothing
                  */
             }
-            
+
             this.state = State.CLOSED;
             return;
         }
