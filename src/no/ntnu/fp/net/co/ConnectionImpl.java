@@ -248,7 +248,14 @@ public class ConnectionImpl extends AbstractConnection {
         /*
          * Receives the packet and returns an ACK
          */
-        KtnDatagram packet = receivePacket(false);
+        KtnDatagram packet = null;
+        try {
+            packet = receivePacket( false );
+        }
+        catch( EOFException e ){
+            close();
+        }
+        
         if( this.state != State.ESTABLISHED ){
             throw new IOException( "Tried to receive in a not connected state" );
         }
@@ -278,8 +285,8 @@ public class ConnectionImpl extends AbstractConnection {
             /*
              * Got FIN, sending ACK
              */
-            sendAck(this.disconnectRequest, false);
             this.state = State.CLOSE_WAIT;
+            sendAck(this.disconnectRequest, false);
 
             /*
              * Sending FIN, waiting for ACK
@@ -288,10 +295,10 @@ public class ConnectionImpl extends AbstractConnection {
             this.disconnectSeqNo = fin.getSeq_nr();
 
             try {
+                this.state = State.LAST_ACK;
                 simplySendPacket(fin);
-                this.state = State.CLOSE_WAIT;
                 KtnDatagram ack = receiveAck();
-                while (ack != null && ack.getSeq_nr() < this.disconnectSeqNo) {
+                while (ack != null ) {
                     /*
                      * Got wrong ACK
                      */
