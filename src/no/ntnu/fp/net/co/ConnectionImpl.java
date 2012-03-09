@@ -202,17 +202,13 @@ public class ConnectionImpl extends AbstractConnection {
             throw new IOException("Not connected");
         }
 
-        int attempts = 0;
-        while (true) {
-            KtnDatagram packet = constructDataPacket(msg);
+        KtnDatagram packet = constructDataPacket(msg);
 
-            KtnDatagram ack = sendDataPacketWithRetransmit(packet);
-            if (ack != null) {
-                return;
-            }
-            attempts++;
+        KtnDatagram ack = sendDataPacketWithRetransmit(packet);
+        if (ack != null) {
+            return;
         }
-        //  throw new IOException("Link broken");
+        throw new IOException("Link broken");
     }
 
     /**
