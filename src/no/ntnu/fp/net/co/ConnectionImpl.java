@@ -63,15 +63,13 @@ public class ConnectionImpl extends AbstractConnection {
         }
     }
 
-    private ConnectionImpl(String myAddress, int myPort, String remoteAddress, int remotePort, int nextSequenceNo) {
+    public ConnectionImpl(String myAddress, int myPort, String remoteAddress, int remotePort, int nextSequenceNo) {
         super();
         this.myAddress = myAddress;
         this.myPort = myPort;
         this.remoteAddress = remoteAddress;
         this.remotePort = remotePort;
         this.nextSequenceNo = nextSequenceNo;
-        this.state = State.ESTABLISHED;
-        System.out.println("New conn!");
     }
 
     /**
