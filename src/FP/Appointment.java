@@ -4,10 +4,13 @@
  */
 package FP;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author lycantrophe
  */
 public interface Appointment {
     
+    public ArrayList<Person> getInvited();
 }
