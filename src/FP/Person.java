@@ -20,6 +20,12 @@ public class Person {
     private String phoneNumber;
     
     private Queue<Object> notifications;
+        /*
+     * Structure options are:
+     *  Hash table
+     *  List
+     */
+    private Structure appointments;
     
     
     public Person( String username, String firstname, String surname, String email, String phoneNumber ){
@@ -33,10 +39,21 @@ public class Person {
         notifications = new LinkedList<Object>();
     }
     
+    /**
+     * Adds an appointment to this objects list and adds a notification to the notification queue
+     * 
+     * @param appointment Appointment to add
+     */
     public void addAppointment( Appointment appointment ){
         appointments.add( appointment );
         notifications.add(Object);
     }
+    
+    /**
+     * Removes the given appointment from this objects appointments list
+     * 
+     * @param appointment Appointment to remove
+     */
     
     public void removeAppointment( Appointment appointment ){
         appointments.remove( appointment );
