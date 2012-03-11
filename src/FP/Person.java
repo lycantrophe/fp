@@ -33,6 +33,9 @@ public class Person {
         notifications = new LinkedList<Object>();
     }
     
-    
+    public void addAppointment( Appointment appointment ){
+        appointments.add( appointment );
+        notifications.add(Object);
+    }
     
 }
