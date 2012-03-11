@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -17,11 +18,13 @@ public abstract class AbstractAppointment implements Appointment {
     protected Person owner;
     protected String description;
     protected AbstractLocation location;
+    protected ArrayList<String> participants;
     
-    public AbstractAppointment( Person owner, Date start, Date end, String description ){
+    public AbstractAppointment( Person owner, Date start, Date end, String description, ArrayList<String> participants ){
         this.owner = owner;
         this.start = start;
         this.end = end;
         this.description = description;
+        this.participants = participants;
     }
 }
