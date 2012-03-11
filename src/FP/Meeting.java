@@ -23,4 +23,9 @@ public class Meeting extends AbstractAppointment {
         this.invited = invited;
         
     }
+    
+    @Override
+    public ArrayList<Person> getInvited() {
+        return invited;
+    }
 }
