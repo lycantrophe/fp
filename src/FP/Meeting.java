@@ -13,14 +13,14 @@ import java.util.Date;
  */
 public class Meeting extends AbstractAppointment {
 
-    private ArrayList<String> participants;
     private ArrayList<Person> invited;
 
     public Meeting(Person me, Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
-        super(me, start, end, description);
-        this.participants = participants;
+        super(me, start, end, description, participants );
 
         // TODO: Handle restrictions
         this.location = location;
+        this.invited = invited;
+        
     }
 }
