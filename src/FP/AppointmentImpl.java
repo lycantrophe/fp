@@ -19,4 +19,11 @@ public class AppointmentImpl extends AbstractAppointment {
         // TODO: Handle restrictions
         this.location = location;
     }
+    
+    @Override
+    public ArrayList<Person> getInvited(){
+        // Possible solution if this throws error: return empty list.
+        // If so AppointmentImpl & Meeting should be merged
+        return null;
+    }
 }
