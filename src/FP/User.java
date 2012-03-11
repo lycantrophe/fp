@@ -34,29 +34,26 @@ public class User {
      *
      * @param description Appointment description
      *
-     * @param participants Non-existing participants
+     * @param invited Existing participants. Can be null
+     *
+     * @param participants Non-existing participants. Can be null
+     *
+     * @param location Location. Can be null
      */
-    /* TODO: Write as one constructor where invited can be passed as null?
-     * 
-     */
-    public void addAppointment(Date start, Date end, String description, ArrayList<String> participants) {
-        Appointment appointment = new Appointment( me, start, end, description, participants );
-    }
+    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
 
-    /**
-     * Creates and adds an appointment to this User's Person
-     *
-     * @param start Appointment start time
-     *
-     * @param end Appointment end time
-     *
-     * @param description Appointment description
-     *
-     * @param invited List of invited participants (existing objects)
-     *
-     * @param participants Non-existent participants
-     */
-    public void addAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants) {
-        Appointment appointment = new Appointment( me, start, end, description, invited, participants );
+        if (invited == null) {
+            
+            // TODO: Add restrictions to location
+            Appointment appointment = new Appointment(me, start, end, description, participants, location );
+        } else {
+            Appointment appointment = new Meeting(me, start, end, description, invited, participants, location );
+            
+            // Give this appointment to everyone invited
+            for (Person other : invited) {
+                other.addAppointment(appointment);
+            }
+            
+        }
     }
 }
