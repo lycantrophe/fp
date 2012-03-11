@@ -42,18 +42,31 @@ public class User {
      */
     public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
 
-        if (invited == null) {
-            
-            // TODO: Add restrictions to location
-            Appointment appointment = new Appointment(me, start, end, description, participants, location );
+        Appointment appointment; 
+        if (invited == null) { 
+            // TODO: Add restrictions to location. Should be in appointment constructor?
+            appointment = new AppointmentImpl(me, start, end, description, participants, location );
         } else {
-            Appointment appointment = new Meeting(me, start, end, description, invited, participants, location );
+            appointment = new Meeting(me, start, end, description, invited, participants, location );
             
             // Give this appointment to everyone invited
             for (Person other : invited) {
                 other.addAppointment(appointment);
             }
-            
         }
+        this.appointments.add( appointment );
     }
+    
+    public void deleteAppointment( Appointment appointment ) {
+        ArrayList<Person> invited = appointment.getInvited();
+        
+        for( Person other : invited ){
+            other.removeAppointment( appointment );
+        }
+        this.me.removeAppointment();
+        /*
+         * Delete from database
+         */
+    }
+    
 }
