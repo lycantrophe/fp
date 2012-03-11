@@ -38,4 +38,7 @@ public class Person {
         notifications.add(Object);
     }
     
+    public void removeAppointment( Appointment appointment ){
+        appointments.remove( appointment );
+    }
 }
