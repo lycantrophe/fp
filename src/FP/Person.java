@@ -20,7 +20,7 @@ public class Person {
     private String phoneNumber;
     
     private Queue<Object> notifications;
-        /*
+    /*
      * Structure options are:
      *  Hash table
      *  List
