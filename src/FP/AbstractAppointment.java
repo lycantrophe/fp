@@ -91,7 +91,7 @@ public abstract class AbstractAppointment implements Appointment {
      * @return the location
      */
     @Override
-    public AbstractLocation getLocation() {
+    public Location getLocation() {
         return location;
     }
 
