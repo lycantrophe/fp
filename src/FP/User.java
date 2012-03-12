@@ -43,6 +43,7 @@ public class User {
     public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
 
         Appointment appointment;
+        // TODO: Add restrictions checking, throw error
         if (invited == null) {
             // TODO: Add restrictions to location. Should be in appointment constructor?
             appointment = new AppointmentImpl(me, start, end, description, participants, location);
@@ -68,5 +69,30 @@ public class User {
         /*
          * Delete from database
          */
+    }
+    
+    public void declineAppointment( Appointment appointment ) {
+        ArrayList<Person> invited = appointment.getInvited();
+        
+        for( Person other : invited ){
+            other.declined( appointment, me );
+        }
+        
+        // TODO: Status change or hard removal?
+        me.removeAppointment( appointment );
+        /*
+         * Update database
+         */
+    }
+    
+    /**
+     * Edits an existing appointment and notifies all participants
+     * 
+     * @param appointment Appointment to change
+     * @param newAppointment Appointment object with changes
+     */
+    
+    public void editAppointment( Appointment appointment, Appointment newAppointment ){
+        appointment.updateAppointment( newAppointment );
     }
 }
