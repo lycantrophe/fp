@@ -58,4 +58,12 @@ public class Person {
     public void removeAppointment( Appointment appointment ){
         appointments.remove( appointment );
     }
+    
+    public void declined( Appointment appointment, Person person ){
+        appointments( appointment ).remove( person );
+        notifyAll();
+    }
+    public int getUsername() {
+        return username;
+    }
 }
