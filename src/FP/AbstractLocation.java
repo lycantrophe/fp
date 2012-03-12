@@ -17,4 +17,12 @@ public abstract class AbstractLocation implements Location {
 
         CONFERENCE_ROOM, CAFE, AUDITORIUM
     }
+
+    protected AbstractLocation(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
