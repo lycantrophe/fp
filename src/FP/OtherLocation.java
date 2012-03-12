@@ -10,13 +10,7 @@ package FP;
  */
 public class OtherLocation extends AbstractLocation {
 
-    public OtherLocation( String name ){
-        this.name = name;
+    public OtherLocation(String name) {
+        super(name);
     }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
-    
 }
