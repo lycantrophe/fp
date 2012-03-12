@@ -28,4 +28,12 @@ public class Meeting extends AbstractAppointment {
     public ArrayList<Person> getInvited() {
         return invited;
     }
+    
+    @Override
+    public void updateAppointment( Appointment newAppointment ){
+        super.updateAppointment(newAppointment);
+        if( newAppointment.getInvited() != null ){
+            invited = newAppointment.getInvited();
+        }
+    }
 }

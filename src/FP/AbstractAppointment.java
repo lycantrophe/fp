@@ -28,12 +28,6 @@ public abstract class AbstractAppointment implements Appointment {
         this.participants = participants;
     }
 
-    /**
-     * Updates the appointment according to differences (and not-null fields) in
-     * newAppointment
-     *
-     * @param newAppointment Appointment object holding fields to modify
-     */
     public void updateAppointment(Appointment newAppointment) {
         if (newAppointment.getStart() != null) {
             start = newAppointment.getStart();
@@ -55,50 +49,26 @@ public abstract class AbstractAppointment implements Appointment {
         }
     }
 
-    /**
-     * @return the start
-     */
-    @Override
     public Date getStart() {
         return start;
     }
 
-    /**
-     * @return the end
-     */
-    @Override
     public Date getEnd() {
         return end;
     }
 
-    /**
-     * @return the owner
-     */
-    @Override
     public Person getOwner() {
         return owner;
     }
 
-    /**
-     * @return the description
-     */
-    @Override
     public String getDescription() {
         return description;
     }
-
-    /**
-     * @return the location
-     */
-    @Override
+    
     public Location getLocation() {
         return location;
     }
 
-    /**
-     * @return the participants
-     */
-    @Override
     public ArrayList<String> getParticipants() {
         return participants;
     }
