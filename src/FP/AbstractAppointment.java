@@ -13,12 +13,12 @@ import java.util.Date;
  */
 public abstract class AbstractAppointment implements Appointment {
 
-    private Date start;
-    private Date end;
-    private Person owner;
-    private String description;
-    private AbstractLocation location;
-    private ArrayList<String> participants;
+    protected Date start;
+    protected Date end;
+    protected Person owner;
+    protected String description;
+    protected Location location;
+    protected ArrayList<String> participants;
 
     public AbstractAppointment(Person owner, Date start, Date end, String description, ArrayList<String> participants) {
         this.owner = owner;
