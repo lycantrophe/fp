@@ -4,6 +4,10 @@
  */
 package FP;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -20,7 +24,7 @@ public abstract class AbstractAppointment implements Appointment {
     protected Location location;
     protected ArrayList<String> participants;
 
-    public AbstractAppointment(Person owner, Date start, Date end, String description, ArrayList<String> participants) {
+    protected AbstractAppointment(Person owner, Date start, Date end, String description, ArrayList<String> participants) {
         this.owner = owner;
         this.start = start;
         this.end = end;
@@ -49,6 +53,27 @@ public abstract class AbstractAppointment implements Appointment {
         }
     }
 
+    protected void updateSQLAppointment(Appointment appointment) throws SQLException {
+
+        Connection con;
+        PreparedStatement sql = null;
+
+        try {
+            con = DriverManager.getConnection(
+                    "jdbc:default:connection");
+
+            sql = con.prepareStatement("UPDATE appointment SET start=?, end=?, owner=?, description=?, setLocation=?");
+            sql.setDate(1, new java.sql.Date(appointment.getStart().getTime()));
+            sql.setDate(2, new java.sql.Date(appointment.getEnd().getTime()));
+            sql.setString(3, appointment.getOwner().getUsername());
+            sql.setString(4, appointment.getDescription());
+        } finally {
+            if (sql != null) {
+                sql.close();
+            }
+        }
+    }
+
     public Date getStart() {
         return start;
     }
@@ -64,7 +89,7 @@ public abstract class AbstractAppointment implements Appointment {
     public String getDescription() {
         return description;
     }
-    
+
     public Location getLocation() {
         return location;
     }
