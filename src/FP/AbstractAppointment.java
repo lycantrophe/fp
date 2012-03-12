@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -50,6 +52,12 @@ public abstract class AbstractAppointment implements Appointment {
         }
         if (newAppointment.getParticipants() != null) {
             participants = newAppointment.getParticipants();
+        }
+        
+        try {
+            updateSQLAppointment( newAppointment );
+        } catch (SQLException ex) {
+            Logger.getLogger(AbstractAppointment.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
