@@ -23,7 +23,7 @@ public interface Appointment {
 
     public Person getOwner();
 
-    public AbstractLocation getLocation();
+    public Location getLocation();
     
     public ArrayList<String> getParticipants();
 }
