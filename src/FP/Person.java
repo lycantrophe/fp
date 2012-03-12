@@ -63,7 +63,7 @@ public class Person {
         appointments( appointment ).remove( person );
         notifyAll();
     }
-    public int getUsername() {
+    public String getUsername() {
         return username;
     }
 }
