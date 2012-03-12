@@ -14,6 +14,7 @@ public class Room extends AbstractLocation {
     private Roomtype type;
 
     public Room( int id, String name, int capacity, Roomtype type ){
+        super( name);
         this.id = id;
         this.name = name;
         this.capacity = capacity;
