@@ -16,24 +16,35 @@ public class Meeting extends AbstractAppointment {
     private ArrayList<Person> invited;
 
     public Meeting(Person me, Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
-        super(me, start, end, description, participants );
+        super(me, start, end, description, participants);
 
         // TODO: Handle restrictions
         this.location = location;
         this.invited = invited;
-        
+
     }
-    
+
     @Override
     public ArrayList<Person> getInvited() {
         return invited;
     }
-    
+
     @Override
-    public void updateAppointment( Appointment newAppointment ){
+    public void updateAppointment(Appointment newAppointment) {
         super.updateAppointment(newAppointment);
-        if( newAppointment.getInvited() != null ){
+        ArrayList<Person> oldInvited = invited;
+        if (newAppointment.getInvited() != null) {
             invited = newAppointment.getInvited();
+        }
+        oldInvited.removeAll(invited);
+        // Notifies everyone removed from the meeting
+        for( Person removed : oldInvited ){
+            removed.notify( "REMOVED!" );
+        }
+        
+        // Notifies everyone else
+        for( Person.other : invited ){
+            other.notify( "Changed!" );
         }
     }
 }
