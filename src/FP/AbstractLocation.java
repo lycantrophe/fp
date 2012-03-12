@@ -9,9 +9,10 @@ package FP;
  * @author lycantrophe
  */
 public abstract class AbstractLocation implements Location {
-    
+
     protected String name;
     protected int id;
+
     protected enum Roomtype {
 
         CONFERENCE_ROOM, CAFE, AUDITORIUM
