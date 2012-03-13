@@ -71,11 +71,10 @@ public class SimpleConnection implements Connection {
 		
     ServerSocket myServerSocket = new ServerSocket(myPort);
 		
-    System.out.println("Serversocket lytter på: " +myServerSocket.getLocalPort() );
+    System.out.println("Serversocket lytter: " +myServerSocket.getLocalPort() );
     mySocket = myServerSocket.accept();
-    System.out.println("Fikk en oppkobling på: " +myServerSocket.getLocalPort() );
-	    
-    //skal denne lukkes med en gang? hvis ikke - når?
+    System.out.println("Fikk en oppkobling: " +myServerSocket.getLocalPort() );
+	  
     myServerSocket.close();
 
     return new SimpleConnection(mySocket, myPort);
