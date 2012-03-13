@@ -4,7 +4,10 @@
  */
 package FP;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -40,49 +43,52 @@ public class User {
      *
      * @param location Location. Can be null
      */
-    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
+    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) throws SQLException {
 
         Appointment appointment;
         // TODO: Add restrictions checking, throw error
-        if (invited == null) {
-            // TODO: Add restrictions to location. Should be in appointment constructor?
-            appointment = new AppointmentImpl(me, start, end, description, participants, location);
-        } else {
-            appointment = new Meeting(me, start, end, description, invited, participants, location);
+        // TODO: Add restrictions to location. Should be in appointment constructor?
+        appointment = new AppointmentImpl(me, start, end, description, invited, participants, location);
 
-            // Give this appointment to everyone invited
-            for (Person other : invited) {
-                other.addAppointment(appointment);
-            }
+        // Give this appointment to everyone invited
+        for (Person other : invited) {
+            other.addAppointment(appointment);
         }
-        // TODO: Pass "me" in invited list?
-        me.addAppointment(appointment);
     }
+    // TODO: Pass "me" in invited list?
 
     public void deleteAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
 
-        for (Person other : invited) {
-            other.removeAppointment(appointment);
+        Query query;
+        try {
+            query = new Query();
+            query.deleteAppointment(appointment);
+            for (Person other : invited) {
+                other.deleteAppointment(appointment);
+                other.notify( "Appointment" + appointment.getId() + "deleted" );
+            }
+            query.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.me.removeAppointment(appointment);
-        /*
-         * Delete from database
-         */
     }
 
     public void declineAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
-
-        for (Person other : invited) {
-            other.declined(appointment, me);
+        Query query;
+        
+        try{
+            query = new Query();
+            query.updateStatus("DECLINED", appointment, me);
+            // Should invited be tuple? enum with status + ID
+            appointment.setUserStatus();
+            for( Person other: invited ){
+                other.notify( me.getUsername() + " declined " + appointment.getId() );
+            }
+        } catch (SQLException e) {
+            
         }
-
-        // TODO: Status change or hard removal?
-        me.removeAppointment(appointment);
-        /*
-         * Update database
-         */
     }
 
     /**
