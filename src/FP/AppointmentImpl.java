@@ -45,55 +45,6 @@ public class AppointmentImpl implements Appointment {
     @Override
     public void updateAppointment(Appointment appointment) {
 
-        if (appointment.getStart() != null) {
-            start = appointment.getStart();
-        }
-        if (appointment.getEnd() != null) {
-            end = appointment.getEnd();
-        }
-        if (appointment.getOwner() != null) {
-            owner = appointment.getOwner();
-        }
-        if (appointment.getDescription() != null) {
-            description = appointment.getDescription();
-        }
-        if (appointment.getLocation() != null) {
-            location = appointment.getLocation();
-        }
-        if (appointment.getParticipants() != null) {
-            participants = appointment.getParticipants();
-        }
-
-        ArrayList<Person> oldInvited = invited;
-
-        if (appointment.getInvited() != null) {
-            invited = appointment.getInvited();
-        }
-
-        ArrayList<Person> newInvited = invited;
-        oldInvited.removeAll(invited);
-        newInvited.removeAll(oldInvited);
-
-        // Remove owner from the list so he does not get notifications
-        invited.remove(owner);
-        oldInvited.remove(owner);
-        // Notifies everyone removed from the meeting
-        for (Person removed : oldInvited) {
-            removed.notify("You have been removed from " + id);
-        }
-
-        // Notifies everyone else
-        for (Person other : invited) {
-            other.notify(id + " has changed!");
-        }
-        Query query;
-        try {
-            query = new Query();
-            query.updateAppointment(appointment, newInvited, oldInvited);
-            query.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(AppointmentImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public Date getStart() {
@@ -122,5 +73,33 @@ public class AppointmentImpl implements Appointment {
 
     public ArrayList<String> getParticipants() {
         return participants;
+    }
+
+    public void setStart(Date start) {
+        this.start = start;
+    }
+    
+    public void setEnd(Date end) {
+        this.end = end;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    public void setParticipants(ArrayList<String> participants) {
+        this.participants = participants;
+    }
+
+    public void setInvited(ArrayList<Person> invited) {
+        this.invited = invited;
     }
 }

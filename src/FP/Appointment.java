@@ -16,6 +16,14 @@ public interface Appointment {
     public ArrayList<Person> getInvited();
 
     /**
+     * Updates the appointment according to differences (and not-null fields) in
+     * newAppointment
+     *
+     * @param newAppointment Appointment object holding fields to modify
+     */
+    public void updateAppointment(Appointment newAppointment);
+
+    /**
      * @return the start
      */
     public Date getStart();
@@ -41,15 +49,47 @@ public interface Appointment {
     public Location getLocation();
 
     /**
+     * @return the location
+     */
+    public String getId();
+
+    /**
      * @return the participants
      */
     public ArrayList<String> getParticipants();
 
     /**
-     * Updates the appointment according to differences (and not-null fields) in
-     * newAppointment
-     *
-     * @param newAppointment Appointment object holding fields to modify
+     * @param start the start to set
      */
-    public void updateAppointment(Appointment newAppointment);
+    public void setStart(Date start);
+
+    /**
+     * @param end the end to set
+     */
+    public void setEnd(Date end);
+
+    /**
+     * @param owner the owner to set
+     */
+    public void setOwner(Person owner);
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description);
+
+    /**
+     * @param location the location to set
+     */
+    public void setLocation(Location location);
+
+    /**
+     * @param participants the participants to set
+     */
+    public void setParticipants(ArrayList<String> participants);
+
+    /**
+     * @param invited the invited to set
+     */
+    public void setInvited(ArrayList<Person> invited);
 }
