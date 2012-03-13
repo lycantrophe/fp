@@ -67,7 +67,7 @@ public class Person {
     }
     public ArrayList<object> getNotifications() {
         // TODO: Handle ack before notifications are removed. 
-        // getNextNotification()?
+        // getNextNotification()? If so, use queue instead of arraylist.
         return notifications;
     }
 }
