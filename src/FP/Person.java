@@ -4,7 +4,6 @@
  */
 package FP;
 
-import java.util.LinkedList;
 import java.util.Queue;
 
 /**
@@ -19,7 +18,7 @@ public class Person {
     private String email;
     private String phoneNumber;
     
-    private Queue<Object> notifications;
+    private ArrayList<Object> notifications;
     /*
      * Structure options are:
      *  Hash table
@@ -65,5 +64,10 @@ public class Person {
     }
     public String getUsername() {
         return username;
+    }
+    public ArrayList<object> getNotifications() {
+        // TODO: Handle ack before notifications are removed. 
+        // getNextNotification()?
+        return notifications;
     }
 }
