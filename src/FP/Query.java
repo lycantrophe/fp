@@ -32,26 +32,39 @@ public class Query {
         statement.setString(3, appointment.getOwner().getUsername());
         statement.setString(4, appointment.getDescription());
 
-        con.prepareStatement("INSERT INTO appointment (username, appointmentid) VALUES ( ?, ? )");
+        con.prepareStatement("INSERT INTO appointmentRel (username, appointmentid, status ) VALUES ( ?, ?, ?)");
 
         for (Person other : newParticipants) {
             statement.setString(1, other.getUsername());
             statement.setString(2, appointment.getId());
+            statement.setString(3, "PENDING");
             statement.executeUpdate();
         }
 
-        statement = con.prepareStatement("DELETE FROM appointment WHERE username=? AND appointmentid=? )");
+        statement = con.prepareStatement("DELETE FROM appointmentRel WHERE username=? AND appointmentid=? )");
 
         for (Person other : oldParticipants) {
             statement.setString(1, other.getUsername());
             statement.setString(2, appointment.getId());
             statement.executeUpdate();
-
         }
     }
 
     public void deleteAppointment(Appointment appointment) throws SQLException {
-        statement = con.prepareStatement("DELETE FROM appointment WHERE  appointmentid = ?");
+        statement = con.prepareStatement("DELETE FROM appointmentRel WHERE  appointmentid = ?");
         statement.setString(1, appointment.getId());
+    }
+
+    public void updateStatus(String status, Appointment appointment, ArrayList<Person> persons) throws SQLException {
+        statement = con.prepareStatement("UPDATE appointmentRel SET status = ? WHERE appointmentId = ? AND username = ? ");
+        for (Person person : persons) {
+            statement.setString(1, status);
+            statement.setString(2, appointment.getId());
+            statement.setString(3, person.getUsername());
+        }
+    }
+
+    public void close() throws SQLException {
+        con.close();
     }
 }
