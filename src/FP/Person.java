@@ -5,6 +5,8 @@
 package FP;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -18,13 +20,8 @@ public class Person {
     private String email;
     private String phoneNumber;
     
-    private ArrayList<Object> notifications;
-    /*
-     * Structure options are:
-     *  Hash table
-     *  List
-     */
-    private Structure appointments;
+    private ArrayList<String> notifications;
+    private static Map<String, Appointment> appointments; 
     
     
     public Person( String username, String firstname, String surname, String email, String phoneNumber ){
@@ -35,7 +32,8 @@ public class Person {
         this.email = email;
         this.phoneNumber = phoneNumber;
         
-        notifications = new ArrayList<Object>();
+        notifications = new ArrayList<String>();
+        appointments = new HashMap<String, Appointment>();
     }
     
     /**
@@ -44,8 +42,8 @@ public class Person {
      * @param appointment Appointment to add
      */
     public void addAppointment( Appointment appointment ){
-        appointments.add( appointment );
-        notifications.add(Object);
+        appointments.add( appointment.getId(), appointment );
+        notifications.add("Appointment added");
     }
     
     /**
@@ -58,8 +56,8 @@ public class Person {
         appointments.remove( appointment );
     }
     
-    public void declined( Appointment appointment, Person person ){
-        appointments( appointment ).remove( person );
+    public void declined( String ID ){
+        appointments.remove( ID );
         notifyAll();
     }
     
@@ -67,7 +65,7 @@ public class Person {
         return username;
     }
     
-    public ArrayList<object> getNotifications() {
+    public ArrayList<String> getNotifications() {
         // TODO: Handle ack before notifications are removed. 
         // getNextNotification()? If so, use queue instead of arraylist.
         return notifications;
