@@ -55,13 +55,11 @@ public class Query {
         statement.setString(1, appointment.getId());
     }
 
-    public void updateStatus(String status, Appointment appointment, ArrayList<Person> persons) throws SQLException {
+    public void updateStatus(String status, Appointment appointment, Person person) throws SQLException {
         statement = con.prepareStatement("UPDATE appointmentRel SET status = ? WHERE appointmentId = ? AND username = ? ");
-        for (Person person : persons) {
-            statement.setString(1, status);
-            statement.setString(2, appointment.getId());
-            statement.setString(3, person.getUsername());
-        }
+        statement.setString(1, status);
+        statement.setString(2, appointment.getId());
+        statement.setString(3, person.getUsername());
     }
 
     public void close() throws SQLException {
