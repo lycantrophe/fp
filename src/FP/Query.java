@@ -39,7 +39,7 @@ public class Query {
             statement.setString(2, appointment.getId());
             statement.executeUpdate();
         }
-        
+
         statement = con.prepareStatement("DELETE FROM appointment WHERE username=? AND appointmentid=? )");
 
         for (Person other : oldParticipants) {
@@ -48,5 +48,10 @@ public class Query {
             statement.executeUpdate();
 
         }
+    }
+
+    public void deleteAppointment(Appointment appointment) throws SQLException {
+        statement = con.prepareStatement("DELETE FROM appointment WHERE  appointmentid = ?");
+        statement.setString(1, appointment.getId());
     }
 }
