@@ -95,10 +95,6 @@ public class AppointmentImpl implements Appointment {
             Logger.getLogger(AppointmentImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void deleteAppointment( Appointment appointment ){
-        
-    }
 
     public Date getStart() {
         return start;
@@ -115,7 +111,7 @@ public class AppointmentImpl implements Appointment {
     public String getDescription() {
         return description;
     }
-
+    
     public String getId() {
         return id;
     }
