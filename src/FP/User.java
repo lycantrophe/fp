@@ -66,7 +66,7 @@ public class User {
             query.deleteAppointment(appointment);
             for (Person other : invited) {
                 other.deleteAppointment(appointment);
-                other.notify( "Appointment" + appointment.getId() + "deleted" );
+                other.notify("Appointment" + appointment.getId() + "deleted");
             }
             query.close();
         } catch (SQLException ex) {
@@ -77,17 +77,16 @@ public class User {
     public void declineAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
         Query query;
-        
-        try{
+
+        try {
             query = new Query();
             query.updateStatus("DECLINED", appointment, me);
             // Should invited be tuple? enum with status + ID
             appointment.setUserStatus();
-            for( Person other: invited ){
-                other.notify( me.getUsername() + " declined " + appointment.getId() );
+            for (Person other : invited) {
+                other.notify(me.getUsername() + " declined " + appointment.getId());
             }
         } catch (SQLException e) {
-            
         }
     }
 
@@ -97,7 +96,56 @@ public class User {
      * @param appointment Appointment to change
      * @param newAppointment Appointment object with changes
      */
-    public void editAppointment(Appointment appointment, Appointment newAppointment) {
-        appointment.updateAppointment(newAppointment);
+    public void editAppointment(Appointment appointment, Date start, Date end, Person owner, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
+
+        if (appointment.getStart() != null && !start.equals(appointment.getStart())) {
+            appointment.setStart(start);
+        }
+        if (appointment.getEnd() != null && !end.equals(appointment.getEnd())) {
+            appointment.setEnd(end);
+        }
+        if (appointment.getOwner() != null && !owner.equals(appointment.getOwner())) {
+            appointment.setOwner(owner);
+        }
+        if (appointment.getDescription() != null && !description.equals(appointment.getDescription())) {
+            appointment.setDescription(description);
+        }
+        if (appointment.getLocation() != null && !location.equals(appointment.getLocation())) {
+            appointment.setLocation(location);
+        }
+        if (appointment.getParticipants() != null && !participants.equals(appointment.getParticipants())) {
+            appointment.setParticipants(participants);
+        }
+
+        ArrayList<Person> oldInvited = invited;
+        ArrayList<Person> newInvited = oldInvited;
+        
+        if (invited.size() > 1 || appointment.getInvited().size() > 1) {
+
+            oldInvited.removeAll(invited);
+            newInvited.removeAll(oldInvited);
+
+            // Remove owner from the list so he does not get notifications
+            // TODO: Support for changing owner? If so: handle cases where people have been removed/added and the new owner shall receive notification
+            invited.remove(owner);
+            oldInvited.remove(owner);
+            // Notifies everyone removed from the meeting
+            for (Person removed : oldInvited) {
+                removed.notify("You have been removed from " + appointment.getId());
+            }
+
+            // Notifies everyone else
+            for (Person other : invited) {
+                other.notify(appointment.getId() + " has changed!");
+            }
+        }
+        Query query;
+        try {
+            query = new Query();
+            query.updateAppointment(appointment, newInvited, oldInvited);
+            query.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(AppointmentImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
