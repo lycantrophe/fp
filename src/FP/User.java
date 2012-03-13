@@ -4,8 +4,7 @@
  */
 package FP;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
 /**
  *
@@ -13,6 +12,7 @@ import java.util.Date;
  */
 public class User {
 
+    private static Map<String, Person> personMap = Collections.synchronizedMap(new HashMap<String, Person>());
     private Person me;
 
     /**
@@ -21,8 +21,8 @@ public class User {
      * @param myPerson Person object to bind User session to
      *
      */
-    public User(Person myPerson) {
-        me = myPerson;
+    public User(String myPerson) {
+        me = personMap.get(myPerson);
     }
 
     /**
@@ -59,7 +59,7 @@ public class User {
         me.addAppointment(appointment);
     }
 
-    public void deleteAppointment( Appointment appointment ) {
+    public void deleteAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
 
         for (Person other : invited) {
@@ -70,29 +70,28 @@ public class User {
          * Delete from database
          */
     }
-    
-    public void declineAppointment( Appointment appointment ) {
+
+    public void declineAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
-        
-        for( Person other : invited ){
-            other.declined( appointment, me );
+
+        for (Person other : invited) {
+            other.declined(appointment, me);
         }
-        
+
         // TODO: Status change or hard removal?
-        me.removeAppointment( appointment );
+        me.removeAppointment(appointment);
         /*
          * Update database
          */
     }
-    
+
     /**
      * Edits an existing appointment and notifies all participants
-     * 
+     *
      * @param appointment Appointment to change
      * @param newAppointment Appointment object with changes
      */
-    
-    public void editAppointment( Appointment appointment, Appointment newAppointment ){
-        appointment.updateAppointment( newAppointment );
+    public void editAppointment(Appointment appointment, Appointment newAppointment) {
+        appointment.updateAppointment(newAppointment);
     }
 }

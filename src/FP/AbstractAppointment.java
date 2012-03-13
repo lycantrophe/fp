@@ -65,7 +65,8 @@ public abstract class AbstractAppointment implements Appointment {
 
         Connection con;
         PreparedStatement sql = null;
-
+        
+        // TODO: Consider placing all SQL actions in one class
         try {
             con = DriverManager.getConnection(
                     "jdbc:default:connection");

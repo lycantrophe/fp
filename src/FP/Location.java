@@ -9,5 +9,6 @@ package FP;
  * @author lycantrophe
  */
 public interface Location {
+    
     public String getName();
 }

@@ -4,7 +4,7 @@
  */
 package FP;
 
-import java.util.Queue;
+import java.util.ArrayList;
 
 /**
  *
@@ -35,7 +35,7 @@ public class Person {
         this.email = email;
         this.phoneNumber = phoneNumber;
         
-        notifications = new LinkedList<Object>();
+        notifications = new ArrayList<Object>();
     }
     
     /**
@@ -62,12 +62,19 @@ public class Person {
         appointments( appointment ).remove( person );
         notifyAll();
     }
+    
     public String getUsername() {
         return username;
     }
+    
     public ArrayList<object> getNotifications() {
         // TODO: Handle ack before notifications are removed. 
         // getNextNotification()? If so, use queue instead of arraylist.
         return notifications;
+    }
+    
+    public void notify( String notification ){
+        notifications.add( notification );
+        // TODO: Notify user client session
     }
 }
