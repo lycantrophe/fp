@@ -43,31 +43,31 @@ public class AppointmentImpl implements Appointment {
     }
 
     @Override
-    public void updateAppointment(Appointment newAppointment) {
+    public void updateAppointment(Appointment appointment) {
 
-        if (newAppointment.getStart() != null) {
-            start = newAppointment.getStart();
+        if (appointment.getStart() != null) {
+            start = appointment.getStart();
         }
-        if (newAppointment.getEnd() != null) {
-            end = newAppointment.getEnd();
+        if (appointment.getEnd() != null) {
+            end = appointment.getEnd();
         }
-        if (newAppointment.getOwner() != null) {
-            owner = newAppointment.getOwner();
+        if (appointment.getOwner() != null) {
+            owner = appointment.getOwner();
         }
-        if (newAppointment.getDescription() != null) {
-            description = newAppointment.getDescription();
+        if (appointment.getDescription() != null) {
+            description = appointment.getDescription();
         }
-        if (newAppointment.getLocation() != null) {
-            location = newAppointment.getLocation();
+        if (appointment.getLocation() != null) {
+            location = appointment.getLocation();
         }
-        if (newAppointment.getParticipants() != null) {
-            participants = newAppointment.getParticipants();
+        if (appointment.getParticipants() != null) {
+            participants = appointment.getParticipants();
         }
 
         ArrayList<Person> oldInvited = invited;
 
-        if (newAppointment.getInvited() != null) {
-            invited = newAppointment.getInvited();
+        if (appointment.getInvited() != null) {
+            invited = appointment.getInvited();
         }
 
         ArrayList<Person> newInvited = invited;
@@ -89,11 +89,15 @@ public class AppointmentImpl implements Appointment {
         Query query;
         try {
             query = new Query();
-            query.updateAppointment(newAppointment, newInvited, oldInvited);
+            query.updateAppointment(appointment, newInvited, oldInvited);
             query.close();
         } catch (SQLException ex) {
             Logger.getLogger(AppointmentImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void deleteAppointment( Appointment appointment ){
+        
     }
 
     public Date getStart() {
