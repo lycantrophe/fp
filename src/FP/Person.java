@@ -59,10 +59,10 @@ public class Person {
      *
      * @param appointmentId Appointment to remove
      */
-    public void deleteAppointment(Appointment appointment) {
-        appointments.remove(appointment.getId());
+    public void deleteAppointment(String id) {
+        appointments.remove(id);
     }
-
+    
     public String getUsername() {
         return username;
     }
@@ -85,7 +85,11 @@ public class Person {
             }
         }
     }
-
+    
+    public Appointment getAppointment( String id ){
+        return appointments.get(id);
+    }
+    
     public Set<String> getAppointmentIds() {
         return appointments.keySet();
     }
