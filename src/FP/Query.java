@@ -110,12 +110,14 @@ public class Query {
             statement = con.prepareStatement("SELECT COUNT(*) FROM users WHERE username=? AND password=?");
             statement.setString(1, username);
             statement.setString(2, password);
+            ResultSet rs = statement.executeQuery();
+            return rs.getInt("COUNT") == 1 ? true : false;
         } catch (SQLException e) {
             /*
              * Handle exception
              */
         }
-        return SQL == 1 ? true : false;
+        return false;
     }
 
     public ArrayList<Person> getPersons() {
