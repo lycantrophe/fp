@@ -37,14 +37,8 @@ public class AppointmentImpl implements Appointment {
         invited.add(owner);
     }
 
-    @Override
     public ArrayList<Person> getInvited() {
         return invited;
-    }
-
-    @Override
-    public void updateAppointment(Appointment appointment) {
-
     }
 
     public Date getStart() {
