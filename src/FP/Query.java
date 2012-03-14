@@ -19,9 +19,15 @@ public class Query {
     private Connection con;
     PreparedStatement statement;
 
-    public Query() throws SQLException {
-        con = DriverManager.getConnection(
-                "jdbc:default:connection");
+    public Query() {
+        try {
+            con = DriverManager.getConnection(
+                    "jdbc:default:connection");
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
     }
 
     public void updateAppointment(Appointment appointment, ArrayList<Person> newParticipants, ArrayList<Person> oldParticipants) {
