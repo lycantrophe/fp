@@ -79,11 +79,11 @@ public class User {
         Set<String> appointmentIds = me.getAppointmentIds();
 
         // Iterate over appointments
-        for( String appointment : appointmentIds ){
-            
-            ArrayList<Person> invited = me.getInvited( appointment );
+        for (String appointment : appointmentIds) {
+
+            ArrayList<Person> invited = me.getInvited(appointment);
             // Get all participants
-            for( Person other : invited ){
+            for (Person other : invited) {
                 // TODO: add protocol parameters for serializing objects
                 protocol += other.getUsername();
             }
@@ -91,19 +91,21 @@ public class User {
         return protocol;
     }
 
-    public void deleteAppointment(Appointment appointment) {
+    public void deleteAppointment(String id) {
+        Appointment appointment = me.getAppointment(id);
         ArrayList<Person> invited = appointment.getInvited();
 
         Query query = new Query();
         query.deleteAppointment(appointment);
         for (Person other : invited) {
-            other.deleteAppointment(appointment);
-            other.notify("Appointment" + appointment.getId() + "deleted");
+            other.deleteAppointment(id);
+            other.notify("Appointment" + id + "deleted");
         }
         query.close();
     }
 
-    public void declineAppointment(Appointment appointment) {
+    public void declineAppointment(String id) {
+        Appointment appointment = me.getAppointment(id);
         ArrayList<Person> invited = appointment.getInvited();
 
         Query query = new Query();
@@ -111,7 +113,7 @@ public class User {
         // Should invited be tuple? enum with status + ID
         appointment.setUserStatus();
         for (Person other : invited) {
-            other.notify(me.getUsername() + " declined " + appointment.getId());
+            other.notify(me.getUsername() + " declined " + id);
         }
     }
 
@@ -172,8 +174,8 @@ public class User {
     public void sendNotification(String notification) throws ConnectException, IOException {
         connection.send(notification);
     }
-    
-    public static void addPerson( Person person ){
-        personMap.put( person.getUsername(), person );
+
+    public static void addPerson(Person person) {
+        personMap.put(person.getUsername(), person);
     }
 }
