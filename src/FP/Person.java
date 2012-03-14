@@ -4,12 +4,11 @@
  */
 package FP;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  *
@@ -24,6 +23,9 @@ public class Person {
     private String phoneNumber;
     private ArrayList<String> notifications;
     private static Map<String, Appointment> appointments;
+    private boolean online;
+    private User user;
+    private PropertyChangeSupport pcs;
 
     public Person(String username, String firstname, String surname, String email, String phoneNumber) {
 
@@ -35,6 +37,13 @@ public class Person {
 
         notifications = new ArrayList<String>();
         appointments = new HashMap<String, Appointment>();
+        pcs = new PropertyChangeSupport(this);
+    }
+
+    public void bindUser(User user) {
+        this.user = user;
+        online = true;
+        //user.addEventListener(this);
     }
 
     /**
@@ -45,8 +54,6 @@ public class Person {
      */
     public void addAppointment(Appointment appointment) {
         appointments.put(appointment.getId(), appointment);
-        notify("Appointment added");
-        notifications.add("Appointment added");
     }
 
     /**
@@ -56,17 +63,6 @@ public class Person {
      */
     public void deleteAppointment(Appointment appointment) {
         appointments.remove(appointment.getId());
-    }
-
-    public void declined(Appointment appointment, Person person) {
-        Query query;
-        try {
-            query = new Query();
-            query.updateStatus("DECLINED", appointment, person);
-            query.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public String getUsername() {
@@ -81,6 +77,11 @@ public class Person {
 
     public void notify(String notification) {
         notifications.add(notification);
-        fireNotificationsUpdated();
+        if (online) {
+        }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
 }
