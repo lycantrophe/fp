@@ -7,8 +7,6 @@ package FP;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 /**
  *
@@ -23,9 +21,7 @@ public class Person {
     private String phoneNumber;
     private ArrayList<String> notifications;
     private static Map<String, Appointment> appointments;
-    private boolean online;
     private User user;
-    private PropertyChangeSupport pcs;
 
     public Person(String username, String firstname, String surname, String email, String phoneNumber) {
 
@@ -37,13 +33,10 @@ public class Person {
 
         notifications = new ArrayList<String>();
         appointments = new HashMap<String, Appointment>();
-        pcs = new PropertyChangeSupport(this);
     }
 
     public void bindUser(User user) {
         this.user = user;
-        online = true;
-        //user.addEventListener(this);
     }
 
     /**
@@ -77,11 +70,8 @@ public class Person {
 
     public void notify(String notification) {
         notifications.add(notification);
-        if (online) {
+        if (user != null) {
+            user.sendNotification(notification);
         }
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
     }
 }
