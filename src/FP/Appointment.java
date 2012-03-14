@@ -16,14 +16,6 @@ public interface Appointment {
     public ArrayList<Person> getInvited();
 
     /**
-     * Updates the appointment according to differences (and not-null fields) in
-     * newAppointment
-     *
-     * @param newAppointment Appointment object holding fields to modify
-     */
-    public void updateAppointment(Appointment newAppointment);
-
-    /**
      * @return the start
      */
     public Date getStart();
