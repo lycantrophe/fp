@@ -6,6 +6,9 @@ package FP;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import no.ntnu.fp.net.admin.Log;
 import no.ntnu.fp.net.co.Connection;
 import no.ntnu.fp.net.co.ConnectionImpl;
@@ -31,33 +34,40 @@ public class Calendar {
         // each new connection lives in its own instance
         Connection conn;
         // TODO: Thread at this point?
+
+        buildAllObjects();
+
         try {
             conn = server.accept();
 
+            Query query = new Query();
             try {
                 String uname = conn.receive();
                 String pw = conn.receive();
-                if (authorize(uname, pw)) {
+                if (query.authorize(uname, pw)) {
+                    query.close();
                     User user = new User(uname);
                     user.bind(conn);
-                    conn.send( user.initialSend() );
-                    while( true ) {
+                    conn.send(user.initialSend());
+                    while (true) {
                         String cmd = conn.receive();
-                        /* do things */
+                        /*
+                         * do things
+                         */
                     }
-                    
+
                     // Send notifications
-                    
-                    // Send calendar info (Serialize data?
-                    
-                }
-                else{
+
+                    // Send calendar info (Serialize data?)
+
+                } else {
                     // TODO: Wrong login handling.
                     conn.send("Try again!");
                 }
 
 
             } catch (EOFException e) {
+                query.close();
                 Log.writeToLog("Got close request (EOFException), closing.",
                         "TestServer");
                 conn.close();
@@ -70,11 +80,25 @@ public class Calendar {
         }
     }
 
-    private static boolean authorize(String username, String pw) {
-        SQL.conn("SELECT COUNT(*) FROM users WHERE username=? AND password=?");
-        SQL.setString(1, username);
-        SQL.setString(2, pw);
-        SQL.execute();
-        return SQL == 1 ? true : false;
+    private void buildAllObjects() {
+        
+        Query query = new Query();
+        Map<String, Person> personMap = new HashMap<String, Person>();
+        // Get persons
+        for (Person other : query.getPersons()) {
+            User.addPerson(other);
+            personMap.put(other.getUsername(), other );
+        }
+
+        // Get locations
+        Map<String, Location> locationMap = new HashMap<String, Location>();
+        for (Location location : query.getLocations()) {
+            locationMap.put(location.getName(), location);
+        }
+
+        // Create appointments
+        
+        query.createAppointments( personMap, locationMap );
+        query.close();
     }
 }
