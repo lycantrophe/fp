@@ -4,7 +4,10 @@
  */
 package FP;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.*;
+import no.ntnu.fp.net.co.Connection;
 
 /**
  *
@@ -14,6 +17,7 @@ public class User {
 
     private static Map<String, Person> personMap = Collections.synchronizedMap(new HashMap<String, Person>());
     private Person me;
+    private Connection connection;
 
     /**
      * Constructor
@@ -23,7 +27,11 @@ public class User {
      */
     public User(String myPerson) {
         me = personMap.get(myPerson);
+    }
+
+    public void bind(Connection connection) {
         me.bindUser(this);
+        this.connection = connection;
     }
 
     /**
@@ -64,6 +72,23 @@ public class User {
             other.addAppointment(appointment);
             other.notify("You are invited to " + appointment.getId() + ". Please respond");
         }
+    }
+
+    public String initialSend() {
+        String protocol = me.getUsername();
+        Set<String> appointmentIds = me.getAppointmentIds();
+
+        // Iterate over appointments
+        for( String appointment : appointmentIds ){
+            
+            ArrayList<Person> invited = me.getInvited( appointment );
+            // Get all participants
+            for( Person other : invited ){
+                // TODO: add protocol parameters for serializing objects
+                protocol += other.getUsername();
+            }
+        }
+        return protocol;
     }
 
     public void deleteAppointment(Appointment appointment) {
@@ -144,7 +169,7 @@ public class User {
         query.close();
     }
 
-    public void sendNotification(String notification) {
-        //conn.send( notification );
+    public void sendNotification(String notification) throws ConnectException, IOException {
+        connection.send(notification);
     }
 }
