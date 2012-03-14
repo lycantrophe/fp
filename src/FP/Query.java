@@ -6,6 +6,9 @@ package FP;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -131,28 +134,57 @@ public class Query {
         return persons;
     }
 
-    public ArrayList<Appointment> getAppointments() {
-        ArrayList<Appointment> appointments = new ArrayList<Appointment>();
+    public void getAppointments(Map<String, Person> persons, Map<String, Location> locations) {
+
+        HashMap<String, ArrayList<Person>> appointments = new HashMap<String, ArrayList<Person>>();
         try {
-            statement = con.prepareStatement("SELECT * FROM appointments");
+            // Get the relations
+            statement = con.prepareStatement("SELECT * FROM appointmentRel");
             ResultSet rs = statement.executeQuery();
-            // Send in hash or arraylist to map up persons?
+            // Builds the map of all the appointment participants
             while (rs.next()) {
-                /*
-                 * appointments.add(new AppointmentImpl(owner, Date *
-                 * rs.getDate("Start") , rs.getDate("End") ,
-                 * rs.getString("Description") , rs.getString ));
-                 */
+                String key = rs.getString("ID");
+                if (!appointments.containsKey(key)) {
+                    appointments.put(key, new ArrayList<Person>());
+                }
+                appointments.get(key).add(persons.get(key));
+                
             }
         } catch (SQLException e) {
             /*
              * Handle exception
              */
         }
-        return appointments;
+        // Starts the work
+        try {
+            statement = con.prepareStatement("SELECT * FROM appointments");
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                // Builds the participant arraylist
+                ArrayList<String> participants = new ArrayList<String>(Arrays.asList(rs.getString("Participants").split(",")));
+
+                String id = rs.getString("ID");
+                Person owner = persons.get(rs.getString("Owner"));
+
+                // Constructs the appointment
+                Appointment appointment = new AppointmentImpl(owner, rs.getDate("Start"), rs.getDate("End"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("Location")));
+
+                // Adds this appointment to everyone invited
+                for (Person person : appointments.get(id)) {
+                    person.addAppointment(appointment);
+                }
+            }
+
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
     }
 
     public ArrayList<Location> getLocations() {
+
         ArrayList<Location> locations = new ArrayList<Location>();
         try {
             statement = con.prepareStatement("SELECT * FROM Locations");
