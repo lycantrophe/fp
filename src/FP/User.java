@@ -4,10 +4,7 @@
  */
 package FP;
 
-import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -26,6 +23,7 @@ public class User {
      */
     public User(String myPerson) {
         me = personMap.get(myPerson);
+        me.bindUser(this);
     }
 
     /**
@@ -50,8 +48,6 @@ public class User {
         // TODO: Add restrictions to location. Should be in appointment constructor?
         appointment = new AppointmentImpl(me, start, end, description, invited, participants, location);
 
-        // Give this appointment to everyone invited
-
 
         Query query = new Query();
         /*
@@ -62,9 +58,11 @@ public class User {
         query.addAppointment(appointment, invited);
         query.updateStatus("ATTENDING", appointment, me);
         query.close();
+
+        // Give this appointment to everyone invited
         for (Person other : invited) {
             other.addAppointment(appointment);
-            other.notify("Appointment" + appointment.getId() + "deleted");
+            other.notify("You are invited to " + appointment.getId() + ". Please respond");
         }
     }
 
@@ -144,5 +142,9 @@ public class User {
         Query query = new Query();
         query.updateAppointment(appointment, newInvited, oldInvited);
         query.close();
+    }
+
+    public void sendNotification(String notification) {
+        //conn.send( notification );
     }
 }
