@@ -49,8 +49,27 @@ public class Calendar {
                     User user = new User(uname);
                     user.bind(conn);
                     conn.send(user.initialSend());
-                    while (true) {
-                        String cmd = conn.receive();
+                    String cmd;
+                    while ((cmd = conn.receive()) != null) {
+                        // Exit if receives end call
+                        if (cmd.equalsIgnoreCase("exit")) {
+                            break;
+                        }
+                        // Input should be in the form: command :: arg1 :: arg2 :: arg3 
+                        // where args are json serialized strings
+                        String[] opts = cmd.split("::");
+                        if (opts[0].equalsIgnoreCase("delete")) {
+                            // takes: delete :: [id]
+                            // TODO: Validate input
+                            user.deleteAppointment(opts[1]);
+                        } else if (opts[0].equalsIgnoreCase("decline")) {
+                            // takes: decline :: [id]
+                            // TODO: validate input
+                            user.declineAppointment(opts[1]);
+                        } else if (opts[0].equalsIgnoreCase("edit")) {
+                            // parse json
+                            // TODO: validate input
+                        }
                         /*
                          * do things
                          */
@@ -80,14 +99,14 @@ public class Calendar {
         }
     }
 
-    private void buildAllObjects() {
-        
+    private static void buildAllObjects() {
+
         Query query = new Query();
         Map<String, Person> personMap = new HashMap<String, Person>();
         // Get persons
         for (Person other : query.getPersons()) {
             User.addPerson(other);
-            personMap.put(other.getUsername(), other );
+            personMap.put(other.getUsername(), other);
         }
 
         // Get locations
@@ -97,8 +116,8 @@ public class Calendar {
         }
 
         // Create appointments
-        
-        query.createAppointments( personMap, locationMap );
+
+        query.createAppointments(personMap, locationMap);
         query.close();
     }
 }
