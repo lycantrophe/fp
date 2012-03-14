@@ -39,6 +39,12 @@ public class Calendar {
                 String pw = conn.receive();
                 if (authorize(uname, pw)) {
                     User user = new User(uname);
+                    user.bind(conn);
+                    conn.send( user.initialSend() );
+                    while( true ) {
+                        String cmd = conn.receive();
+                        /* do things */
+                    }
                     
                     // Send notifications
                     
