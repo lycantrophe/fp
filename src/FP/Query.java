@@ -31,15 +31,8 @@ public class Query {
         statement.setDate(2, new java.sql.Date(appointment.getEnd().getTime()));
         statement.setString(3, appointment.getOwner().getUsername());
         statement.setString(4, appointment.getDescription());
-
-        con.prepareStatement("INSERT INTO appointmentRel (username, appointmentid, status ) VALUES ( ?, ?, ?)");
-
-        for (Person other : newParticipants) {
-            statement.setString(1, other.getUsername());
-            statement.setString(2, appointment.getId());
-            statement.setString(3, "PENDING");
-            statement.executeUpdate();
-        }
+        
+        addAppointment( appointment, newParticipants);
 
         statement = con.prepareStatement("DELETE FROM appointmentRel WHERE username=? AND appointmentid=? )");
 
@@ -60,6 +53,17 @@ public class Query {
         statement.setString(1, status);
         statement.setString(2, appointment.getId());
         statement.setString(3, person.getUsername());
+    }
+
+    public void addAppointment(Appointment appointment, ArrayList<Person> persons) throws SQLException {
+        con.prepareStatement("INSERT INTO appointmentRel (username, appointmentid, status ) VALUES ( ?, ?, ?)");
+
+        for (Person other : persons) {
+            statement.setString(1, other.getUsername());
+            statement.setString(2, appointment.getId());
+            statement.setString(3, "PENDING");
+            statement.executeUpdate();
+        }
     }
 
     public void close() throws SQLException {
