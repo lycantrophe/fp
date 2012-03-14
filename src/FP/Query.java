@@ -104,7 +104,13 @@ public class Query {
         }
     }
 
-    public void close() throws SQLException {
-        con.close();
+    public void close() {
+        try {
+            con.close();
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
     }
 }
