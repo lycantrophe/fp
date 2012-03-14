@@ -4,10 +4,7 @@
  */
 package FP;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 /**
@@ -102,6 +99,78 @@ public class Query {
              * handle exception
              */
         }
+    }
+
+    public boolean authorize(String username, String password) {
+
+        try {
+            statement = con.prepareStatement("SELECT COUNT(*) FROM users WHERE username=? AND password=?");
+            statement.setString(1, username);
+            statement.setString(2, password);
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
+        return SQL == 1 ? true : false;
+    }
+
+    public ArrayList<Person> getPersons() {
+        ArrayList<Person> persons = new ArrayList<Person>();
+        try {
+            statement = con.prepareStatement("SELECT * FROM persons");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                persons.add(new Person(rs.getString("Username"), rs.getString("Firstname"), rs.getString("Surname"), rs.getString("Email"), rs.getString("Phonenumber")));
+            }
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
+        return persons;
+    }
+
+    public ArrayList<Appointment> getAppointments() {
+        ArrayList<Appointment> appointments = new ArrayList<Appointment>();
+        try {
+            statement = con.prepareStatement("SELECT * FROM appointments");
+            ResultSet rs = statement.executeQuery();
+            // Send in hash or arraylist to map up persons?
+            while (rs.next()) {
+                /*
+                 * appointments.add(new AppointmentImpl(owner, Date *
+                 * rs.getDate("Start") , rs.getDate("End") ,
+                 * rs.getString("Description") , rs.getString ));
+                 */
+            }
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
+        return appointments;
+    }
+
+    public ArrayList<Location> getLocations() {
+        ArrayList<Location> locations = new ArrayList<Location>();
+        try {
+            statement = con.prepareStatement("SELECT * FROM Locations");
+            ResultSet rs = statement.executeQuery();
+            // Send in hash or arraylist to map up persons?
+            while (rs.next()) {
+                if (rs.getString("Type") != null) {
+                    locations.add(new Room(rs.getInt("ID"), rs.getString("Name"), rs.getInt("Capacity"), AbstractLocation.Roomtype.valueOf(rs.getString("Type"))));
+                } else {
+                    locations.add(new OtherLocation(rs.getString("Name")));
+                }
+            }
+        } catch (SQLException e) {
+            /*
+             * Handle exception
+             */
+        }
+        return locations;
     }
 
     public void close() {
