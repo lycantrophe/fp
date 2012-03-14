@@ -134,7 +134,7 @@ public class Query {
         return persons;
     }
 
-    public void getAppointments(Map<String, Person> persons, Map<String, Location> locations) {
+    public void createAppointments(Map<String, Person> persons, Map<String, Location> locations) {
 
         HashMap<String, ArrayList<Person>> appointments = new HashMap<String, ArrayList<Person>>();
         try {
