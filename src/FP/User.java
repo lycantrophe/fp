@@ -53,56 +53,42 @@ public class User {
         // Give this appointment to everyone invited
 
 
-        Query query;
-        try {
-            query = new Query();
-            /*
-             * TODO: Evaluate possible threat: if updateStatus throws error
-             * status will not change and noone will be notified (but entries will be added to the database
-             * figure out a way to handle
-             */
-            query.addAppointment(appointment, invited);
-            query.updateStatus("ATTENDING", appointment, me);
-            query.close();
-            for (Person other : invited) {
-                other.addAppointment(appointment);
-                other.notify("Appointment" + appointment.getId() + "deleted");
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+        Query query = new Query();
+        /*
+         * TODO: Evaluate possible threat: if updateStatus throws error status
+         * will not change and noone will be notified (but entries will be added
+         * to the database figure out a way to handle
+         */
+        query.addAppointment(appointment, invited);
+        query.updateStatus("ATTENDING", appointment, me);
+        query.close();
+        for (Person other : invited) {
+            other.addAppointment(appointment);
+            other.notify("Appointment" + appointment.getId() + "deleted");
         }
     }
 
     public void deleteAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
 
-        Query query;
-        try {
-            query = new Query();
-            query.deleteAppointment(appointment);
-            for (Person other : invited) {
-                other.deleteAppointment(appointment);
-                other.notify("Appointment" + appointment.getId() + "deleted");
-            }
-            query.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+        Query query = new Query();
+        query.deleteAppointment(appointment);
+        for (Person other : invited) {
+            other.deleteAppointment(appointment);
+            other.notify("Appointment" + appointment.getId() + "deleted");
         }
+        query.close();
     }
 
     public void declineAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
-        Query query;
 
-        try {
-            query = new Query();
-            query.updateStatus("DECLINED", appointment, me);
-            // Should invited be tuple? enum with status + ID
-            appointment.setUserStatus();
-            for (Person other : invited) {
-                other.notify(me.getUsername() + " declined " + appointment.getId());
-            }
-        } catch (SQLException e) {
+        Query query = new Query();
+        query.updateStatus("DECLINED", appointment, me);
+        // Should invited be tuple? enum with status + ID
+        appointment.setUserStatus();
+        for (Person other : invited) {
+            other.notify(me.getUsername() + " declined " + appointment.getId());
         }
     }
 
@@ -155,13 +141,8 @@ public class User {
                 other.notify(appointment.getId() + " has changed!");
             }
         }
-        Query query;
-        try {
-            query = new Query();
-            query.updateAppointment(appointment, newInvited, oldInvited);
-            query.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(AppointmentImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Query query = new Query();
+        query.updateAppointment(appointment, newInvited, oldInvited);
+        query.close();
     }
 }
