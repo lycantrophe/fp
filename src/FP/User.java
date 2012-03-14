@@ -43,7 +43,7 @@ public class User {
      *
      * @param location Location. Can be null
      */
-    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) throws SQLException {
+    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
 
         Appointment appointment;
         // TODO: Add restrictions checking, throw error
@@ -51,11 +51,22 @@ public class User {
         appointment = new AppointmentImpl(me, start, end, description, invited, participants, location);
 
         // Give this appointment to everyone invited
-        for (Person other : invited) {
-            other.addAppointment(appointment);
+
+
+        Query query;
+        try {
+            query = new Query();
+            query.addAppointment(appointment, invited);
+            query.updateStatus("ATTENDING", appointment, me);
+            query.close();
+            for (Person other : invited) {
+                other.addAppointment(appointment);
+                other.notify("Appointment" + appointment.getId() + "deleted");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    // TODO: Pass "me" in invited list?
 
     public void deleteAppointment(Appointment appointment) {
         ArrayList<Person> invited = appointment.getInvited();
@@ -119,7 +130,7 @@ public class User {
 
         ArrayList<Person> oldInvited = invited;
         ArrayList<Person> newInvited = oldInvited;
-        
+
         if (invited.size() > 1 || appointment.getInvited().size() > 1) {
 
             oldInvited.removeAll(invited);
