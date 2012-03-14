@@ -7,6 +7,8 @@ package FP;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -68,10 +70,16 @@ public class Person {
         return notifications;
     }
 
-    public void notify(String notification) throws ConnectException, IOException {
+    public void notify(String notification) {
         notifications.add(notification);
         if (user != null) {
-            user.sendNotification(notification);
+            try {
+                user.sendNotification(notification);
+            } catch (ConnectException ex) {
+                Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
