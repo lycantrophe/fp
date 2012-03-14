@@ -56,6 +56,11 @@ public class User {
         Query query;
         try {
             query = new Query();
+            /*
+             * TODO: Evaluate possible threat: if updateStatus throws error
+             * status will not change and noone will be notified (but entries will be added to the database
+             * figure out a way to handle
+             */
             query.addAppointment(appointment, invited);
             query.updateStatus("ATTENDING", appointment, me);
             query.close();
