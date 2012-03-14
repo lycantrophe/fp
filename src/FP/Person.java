@@ -4,9 +4,9 @@
  */
 package FP;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.*;
 
 /**
  *
@@ -68,10 +68,18 @@ public class Person {
         return notifications;
     }
 
-    public void notify(String notification) {
+    public void notify(String notification) throws ConnectException, IOException {
         notifications.add(notification);
         if (user != null) {
             user.sendNotification(notification);
         }
+    }
+
+    public Set<String> getAppointmentIds() {
+        return appointments.keySet();
+    }
+
+    public ArrayList<Person> getInvited(String id) {
+        return appointments.get(id).getInvited();
     }
 }
