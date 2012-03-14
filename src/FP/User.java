@@ -172,4 +172,8 @@ public class User {
     public void sendNotification(String notification) throws ConnectException, IOException {
         connection.send(notification);
     }
+    
+    public static void addPerson( Person person ){
+        personMap.put( person.getUsername(), person );
+    }
 }
