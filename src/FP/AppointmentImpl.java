@@ -4,11 +4,8 @@
  */
 package FP;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -22,10 +19,10 @@ public class AppointmentImpl implements Appointment {
     private String description;
     private Location location;
     private ArrayList<String> participants;
-    private ArrayList<Person> invited;
+    private ArrayList< Attending> invited;
     private String id;
 
-    public AppointmentImpl(Person owner, Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
+    public AppointmentImpl(Person owner, Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
         this.owner = owner;
         this.start = start;
         this.end = end;
@@ -34,10 +31,12 @@ public class AppointmentImpl implements Appointment {
         this.participants = participants;
         this.location = location;
         this.invited = invited;
-        invited.add(owner);
+        Attending att = new Attending(owner);
+        att.setStatus(Attending.Status.ATTENDING);
+        invited.add(att);
     }
 
-    public ArrayList<Person> getInvited() {
+    public ArrayList<Attending> getInvited() {
         return invited;
     }
 
@@ -56,7 +55,7 @@ public class AppointmentImpl implements Appointment {
     public String getDescription() {
         return description;
     }
-    
+
     public String getId() {
         return id;
     }
@@ -72,7 +71,7 @@ public class AppointmentImpl implements Appointment {
     public void setStart(Date start) {
         this.start = start;
     }
-    
+
     public void setEnd(Date end) {
         this.end = end;
     }
@@ -93,7 +92,7 @@ public class AppointmentImpl implements Appointment {
         this.participants = participants;
     }
 
-    public void setInvited(ArrayList<Person> invited) {
+    public void setInvited(ArrayList<Attending> invited) {
         this.invited = invited;
     }
 }
