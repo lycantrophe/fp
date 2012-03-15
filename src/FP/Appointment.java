@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public interface Appointment {
 
-    public ArrayList<Person> getInvited();
+    public ArrayList<Attending> getInvited();
 
     /**
      * @return the start
@@ -83,5 +83,5 @@ public interface Appointment {
     /**
      * @param invited the invited to set
      */
-    public void setInvited(ArrayList<Person> invited);
+    public void setInvited(ArrayList<Attending> invited);
 }
