@@ -293,6 +293,7 @@ public class ConnectionImpl extends AbstractConnection {
 
             try {
                 simplySendPacket(fin);
+                this.state = State.LAST_ACK;
                 KtnDatagram ack = receiveAck();
                 while (ack != null) {
                     /*
@@ -305,7 +306,7 @@ public class ConnectionImpl extends AbstractConnection {
                  * Do nothing
                  */
             }
-            this.state = State.TIME_WAIT;
+            this.state = State.CLOSED;
             return;
         }
 
@@ -318,7 +319,7 @@ public class ConnectionImpl extends AbstractConnection {
              * Builds and sends a FIN packet
              */
             simplySendPacket(fin);
-            this.state = State.LAST_ACK;
+            this.state = State.FIN_WAIT_1;
             this.disconnectSeqNo = fin.getSeq_nr();
 
         } catch (ClException ex) {
@@ -326,7 +327,7 @@ public class ConnectionImpl extends AbstractConnection {
         }
 
         KtnDatagram ack = receiveAck();
-
+        this.state = State.FIN_WAIT_2;
         /*
          * Receives the ACK
          */
@@ -352,6 +353,11 @@ public class ConnectionImpl extends AbstractConnection {
             }
         }
         this.state = State.TIME_WAIT;
+        
+        // Wait grace period
+        
+        this.state = State.CLOSED;
+        
     }
 
     /**
