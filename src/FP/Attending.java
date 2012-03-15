@@ -21,17 +21,21 @@ public class Attending {
         this.person = person;
         this.status = Status.PENDING;
     }
-    
+
+    public Attending(Person person, Status status) {
+        this.person = person;
+        this.status = status;
+    }
+
     public Person getPerson() {
         return person;
     }
-    
+
     public Status getStatus() {
         return status;
     }
-    
-    public void setStatus( Status status ){
+
+    public void setStatus(Status status) {
         this.status = status;
     }
-    
 }
