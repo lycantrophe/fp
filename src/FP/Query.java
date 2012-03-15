@@ -59,6 +59,7 @@ public class Query {
              * Handle exception
              */
         }
+        updateStatus(Attending.Status.PENDING.toString(), appointment, null);
     }
 
     public void deleteAppointment(Appointment appointment) {
@@ -74,11 +75,20 @@ public class Query {
 
     public void updateStatus(String status, Appointment appointment, Person person) {
 
+        String query;
+        if (person != null) {
+            query = "UPDATE appointmentRel SET status = ? WHERE appointmentId = ? AND username = ? ";
+        } else {
+            query = "UPDATE appointmentRel SET status = ? WHERE appointmentId = ?";
+        }
+
         try {
-            statement = con.prepareStatement("UPDATE appointmentRel SET status = ? WHERE appointmentId = ? AND username = ? ");
+            statement = con.prepareStatement(query);
             statement.setString(1, status);
             statement.setString(2, appointment.getId());
-            statement.setString(3, person.getUsername());
+            if (person != null) {
+                statement.setString(3, person.getUsername());
+            }
         } catch (SQLException e) {
             /*
              * Handle exception
@@ -138,7 +148,7 @@ public class Query {
 
     public void createAppointments(Map<String, Person> persons, Map<String, Location> locations) {
 
-        HashMap<String, ArrayList<Person>> appointments = new HashMap<String, ArrayList<Person>>();
+        HashMap<String, ArrayList<Attending>> appointments = new HashMap<String, ArrayList<Attending>>();
         try {
             // Get the relations
             statement = con.prepareStatement("SELECT * FROM appointmentRel");
@@ -147,10 +157,11 @@ public class Query {
             while (rs.next()) {
                 String key = rs.getString("ID");
                 if (!appointments.containsKey(key)) {
-                    appointments.put(key, new ArrayList<Person>());
+                    appointments.put(key, new ArrayList<Attending>());
                 }
-                appointments.get(key).add(persons.get(key));
-                
+                // Adds the newly constructed Attending tuple to the appointments list
+                appointments.get(key).add(new Attending( persons.get(key), Attending.Status.valueOf(rs.getString("Status"))));
+
             }
         } catch (SQLException e) {
             /*
@@ -173,8 +184,8 @@ public class Query {
                 Appointment appointment = new AppointmentImpl(owner, rs.getDate("Start"), rs.getDate("End"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("Location")));
 
                 // Adds this appointment to everyone invited
-                for (Person person : appointments.get(id)) {
-                    person.addAppointment(appointment);
+                for (Attending other : appointments.get(id)) {
+                    other.getPerson().addAppointment(appointment);
                 }
             }
 
