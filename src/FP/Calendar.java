@@ -4,9 +4,7 @@
  */
 package FP;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.Collections;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import no.ntnu.fp.net.admin.Log;
@@ -119,5 +117,11 @@ public class Calendar {
 
         query.createAppointments(personMap, locationMap);
         query.close();
+    }
+    
+    public static String Serialize(Object object) throws IOException{
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            OutputStream out = new ObjectOutputStream(baos);
+            return out.toString();
     }
 }
