@@ -19,7 +19,7 @@ public class AppointmentImpl implements Appointment {
     private String description;
     private Location location;
     private ArrayList<String> participants;
-    private ArrayList< Attending> invited;
+    private ArrayList< Attending > invited;
     private String id;
 
     public AppointmentImpl(Person owner, Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
@@ -31,13 +31,19 @@ public class AppointmentImpl implements Appointment {
         this.participants = participants;
         this.location = location;
         this.invited = invited;
-        Attending att = new Attending(owner);
-        att.setStatus(Attending.Status.ATTENDING);
-        invited.add(att);
+        invited.add(new Attending(owner, Attending.Status.ATTENDING));
     }
 
     public ArrayList<Attending> getInvited() {
         return invited;
+    }
+    
+    public ArrayList<Person> getInvitedPersons() {
+        ArrayList persons = new ArrayList<Person>();
+        for( Attending other : invited ){
+            persons.add(other.getPerson());
+        }
+        return persons;
     }
 
     public Date getStart() {

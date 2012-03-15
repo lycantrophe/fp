@@ -15,9 +15,11 @@ public interface Appointment {
 
     public ArrayList<Attending> getInvited();
 
-    /**
+    public ArrayList<Person> getInvitedPersons(); 
+            /**
      * @return the start
      */
+
     public Date getStart();
 
     /**
