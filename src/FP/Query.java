@@ -104,7 +104,7 @@ public class Query {
             for (Person other : persons) {
                 statement.setString(1, other.getUsername());
                 statement.setString(2, appointment.getId());
-                statement.setString(3, "PENDING");
+                statement.setString(3, Attending.Status.PENDING.toString());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {

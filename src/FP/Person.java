@@ -94,7 +94,7 @@ public class Person {
         return appointments.keySet();
     }
 
-    public ArrayList<Person> getInvited(String id) {
+    public ArrayList<Attending> getInvited(String id) {
         return appointments.get(id).getInvited();
     }
 }

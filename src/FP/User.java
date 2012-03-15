@@ -63,7 +63,7 @@ public class User {
          * will not change and noone will be notified (but entries will be added
          * to the database figure out a way to handle
          */
-        query.addAppointment(appointment, invited);
+        query.addAppointment(appointment, appointment.getInvitedPersons());
         query.updateStatus("ATTENDING", appointment, me);
         query.close();
 
@@ -103,7 +103,7 @@ public class User {
         }
         query.close();
     }
-    
+
     // TODO: Consider merging decline/accept
     public void declineAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
