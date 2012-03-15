@@ -49,7 +49,7 @@ public class User {
      *
      * @param location Location. Can be null
      */
-    public void createAppointment(Date start, Date end, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
+    public void createAppointment(Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
 
         Appointment appointment;
         // TODO: Add restrictions checking, throw error
@@ -68,9 +68,9 @@ public class User {
         query.close();
 
         // Give this appointment to everyone invited
-        for (Person other : invited) {
-            other.addAppointment(appointment);
-            other.notify("You are invited to " + appointment.getId() + ". Please respond");
+        for (Attending other : invited) {
+            other.getPerson().addAppointment(appointment);
+            other.getPerson().notify("You are invited to " + appointment.getId() + ". Please respond");
         }
     }
 
@@ -81,11 +81,11 @@ public class User {
         // Iterate over appointments
         for (String appointment : appointmentIds) {
 
-            ArrayList<Person> invited = me.getInvited(appointment);
+            ArrayList<Attending> invited = me.getInvited(appointment);
             // Get all participants
-            for (Person other : invited) {
+            for (Attending other : invited) {
                 // TODO: add protocol parameters for serializing objects
-                protocol += other.getUsername();
+                protocol += other.getPerson().getUsername();
             }
         }
         return protocol;
@@ -93,27 +93,48 @@ public class User {
 
     public void deleteAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
-        ArrayList<Person> invited = appointment.getInvited();
+        ArrayList<Attending> invited = appointment.getInvited();
 
         Query query = new Query();
         query.deleteAppointment(appointment);
-        for (Person other : invited) {
-            other.deleteAppointment(id);
-            other.notify("Appointment" + id + "deleted");
+        for (Attending other : invited) {
+            other.getPerson().deleteAppointment(id);
+            other.getPerson().notify("Appointment" + id + "deleted");
         }
         query.close();
     }
-
+    
+    // TODO: Consider merging decline/accept
     public void declineAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
-        ArrayList<Person> invited = appointment.getInvited();
+        ArrayList<Attending> invited = appointment.getInvited();
 
         Query query = new Query();
         query.updateStatus("DECLINED", appointment, me);
-        // Should invited be tuple? enum with status + ID
-        appointment.setUserStatus();
-        for (Person other : invited) {
-            other.notify(me.getUsername() + " declined " + id);
+
+        for (Attending other : invited) {
+            other.getPerson().notify(me.getUsername() + " declined " + id);
+            // Harms efficiency a bit, but should be usable
+            if (other.getPerson().equals(me)) {
+                other.setStatus(Attending.Status.DECLINED);
+            }
+        }
+    }
+
+    public void acceptAppointment(String id) {
+        Appointment appointment = me.getAppointment(id);
+        ArrayList<Attending> invited = appointment.getInvited();
+
+        Query query = new Query();
+        query.updateStatus("ATTENDING", appointment, me);
+
+        // Should accepted appointments notify?
+        for (Attending other : invited) {
+            other.getPerson().notify(me.getUsername() + " declined " + id);
+            // Harms efficiency a bit, but should be usable
+            if (other.getPerson().equals(me)) {
+                other.setStatus(Attending.Status.ATTENDING);
+            }
         }
     }
 
