@@ -38,6 +38,7 @@ public class Query {
             statement.setDate(2, new java.sql.Date(appointment.getEnd().getTime()));
             statement.setString(3, appointment.getOwner().getUsername());
             statement.setString(4, appointment.getDescription());
+            statement.executeUpdate();
         } catch (SQLException e) {
             /*
              * Handle exception
@@ -47,7 +48,7 @@ public class Query {
         addAppointment(appointment, newParticipants);
 
         try {
-            statement = con.prepareStatement("DELETE FROM appointmentRel WHERE username=? AND appointmentid=? )");
+            statement = con.prepareStatement("DELETE FROM appointmentRel WHERE username = ? AND appointmentid = ? )");
 
             for (Person other : oldParticipants) {
                 statement.setString(1, other.getUsername());
@@ -64,22 +65,34 @@ public class Query {
 
     public void deleteAppointment(Appointment appointment) {
         try {
-            statement = con.prepareStatement("DELETE FROM appointmentRel WHERE  appointmentid = ?");
+            // This should remove all entries in AppointmentRel
+            statement = con.prepareStatement("DELETE FROM Appointment WHERE ID = ?");
             statement.setString(1, appointment.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            /*
+             * handle exception
+             */
+        }
+        try {
+            // This should remove all entries in AppointmentRel
+            statement = con.prepareStatement("DELETE FROM AppointmentRel WHERE ID = ?");
+            statement.setString(1, appointment.getId());
+            statement.executeUpdate();
         } catch (SQLException e) {
             /*
              * handle exception
              */
         }
     }
-
+    
     public void updateStatus(String status, Appointment appointment, Person person) {
 
         String query;
         if (person != null) {
-            query = "UPDATE appointmentRel SET status = ? WHERE appointmentId = ? AND username = ? ";
+            query = "UPDATE AppointmentRel SET Status = ? WHERE ID = ? AND Person = ? ";
         } else {
-            query = "UPDATE appointmentRel SET status = ? WHERE appointmentId = ?";
+            query = "UPDATE appointmentRel SET Status = ? WHERE ID = ?";
         }
 
         try {
@@ -99,7 +112,7 @@ public class Query {
     public void addAppointment(Appointment appointment, ArrayList<Person> persons) {
 
         try {
-            con.prepareStatement("INSERT INTO appointmentRel (username, appointmentid, status ) VALUES ( ?, ?, ?)");
+            con.prepareStatement("INSERT INTO AppointmentRel (Username, Appointmentid, Status ) VALUES ( ?, ?, ? )");
 
             for (Person other : persons) {
                 statement.setString(1, other.getUsername());
@@ -117,11 +130,11 @@ public class Query {
     public boolean authorize(String username, String password) {
 
         try {
-            statement = con.prepareStatement("SELECT COUNT(*) FROM users WHERE username=? AND password=?");
+            statement = con.prepareStatement("SELECT COUNT(*) AS Valid FROM Users WHERE Username = ? AND Password = ?");
             statement.setString(1, username);
             statement.setString(2, password);
             ResultSet rs = statement.executeQuery();
-            return rs.getInt("COUNT") == 1 ? true : false;
+            return rs.getInt("Valid") == 1 ? true : false;
         } catch (SQLException e) {
             /*
              * Handle exception
@@ -133,7 +146,7 @@ public class Query {
     public ArrayList<Person> getPersons() {
         ArrayList<Person> persons = new ArrayList<Person>();
         try {
-            statement = con.prepareStatement("SELECT * FROM persons");
+            statement = con.prepareStatement("SELECT * FROM Person");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 persons.add(new Person(rs.getString("Username"), rs.getString("Firstname"), rs.getString("Surname"), rs.getString("Email"), rs.getString("Phonenumber")));
@@ -160,7 +173,7 @@ public class Query {
                     appointments.put(key, new ArrayList<Attending>());
                 }
                 // Adds the newly constructed Attending tuple to the appointments list
-                appointments.get(key).add(new Attending( persons.get(key), Attending.Status.valueOf(rs.getString("Status"))));
+                appointments.get(key).add(new Attending(persons.get(key), Attending.Status.valueOf(rs.getString("Status"))));
 
             }
         } catch (SQLException e) {
@@ -170,7 +183,7 @@ public class Query {
         }
         // Starts the work
         try {
-            statement = con.prepareStatement("SELECT * FROM appointments");
+            statement = con.prepareStatement("SELECT * FROM Appointment");
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
@@ -181,7 +194,7 @@ public class Query {
                 Person owner = persons.get(rs.getString("Owner"));
 
                 // Constructs the appointment
-                Appointment appointment = new AppointmentImpl(owner, rs.getDate("Start"), rs.getDate("End"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("Location")));
+                Appointment appointment = new AppointmentImpl(owner, rs.getTime("StartDate"), rs.getTime("EndDate"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("LocationID")));
 
                 // Adds this appointment to everyone invited
                 for (Attending other : appointments.get(id)) {
@@ -200,14 +213,16 @@ public class Query {
 
         ArrayList<Location> locations = new ArrayList<Location>();
         try {
-            statement = con.prepareStatement("SELECT * FROM Locations");
+            statement = con.prepareStatement("SELECT * FROM Location "
+                    + "INNER JOIN Room ON Location.RoomID = Room.RoomID "
+                    + "INNER JOIN RoomType ON Room.RoomTypeID = RTID");
             ResultSet rs = statement.executeQuery();
             // Send in hash or arraylist to map up persons?
             while (rs.next()) {
                 if (rs.getString("Type") != null) {
-                    locations.add(new Room(rs.getInt("ID"), rs.getString("Name"), rs.getInt("Capacity"), AbstractLocation.Roomtype.valueOf(rs.getString("Type"))));
+                    locations.add(new Room(rs.getInt("LocID"), rs.getString("Location.Description"), rs.getInt("Size"), AbstractLocation.Roomtype.valueOf(rs.getString("RoomType.Description"))));
                 } else {
-                    locations.add(new OtherLocation(rs.getString("Name")));
+                    locations.add(new OtherLocation(rs.getString("Description")));
                 }
             }
         } catch (SQLException e) {
