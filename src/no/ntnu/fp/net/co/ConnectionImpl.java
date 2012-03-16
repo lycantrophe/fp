@@ -70,6 +70,7 @@ public class ConnectionImpl extends AbstractConnection {
         this.remoteAddress = remoteAddress;
         this.remotePort = remotePort;
         this.nextSequenceNo = nextSequenceNo;
+        this.state = State.ESTABLISHED;
     }
 
     /**
@@ -150,6 +151,9 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public Connection accept() throws IOException, SocketTimeoutException {
 
+        if( this.state != State.CLOSED ) {
+            throw new IllegalStateException("Cannot accept new connections, connection not closed");
+        }
         this.state = State.LISTEN;
 
         /*
@@ -206,7 +210,7 @@ public class ConnectionImpl extends AbstractConnection {
          * Reserves the port and creates the connection
          */
         Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
-        //this.state = State.CLOSED;
+        this.state = State.CLOSED;
         return newConn;
     }
 
@@ -222,7 +226,7 @@ public class ConnectionImpl extends AbstractConnection {
     public void send(String msg) throws ConnectException, IOException {
 
         if (this.state != State.ESTABLISHED) {
-            throw new IOException("Not connected");
+            throw new IllegalStateException("Cannot send from a non-established state");
         }
         /*
          * Sends the data package with retransmission enabled
@@ -246,14 +250,15 @@ public class ConnectionImpl extends AbstractConnection {
         /*
          * Receives the packet and returns an ACK
          */
+        
+        if (this.state != State.ESTABLISHED) {
+            throw new IllegalStateException("Tried to receive in a non-connected state");
+        }
         KtnDatagram packet = null;
 
         packet = receivePacket(false);
 
 
-        if (this.state != State.ESTABLISHED) {
-            throw new IOException("Tried to receive in a not connected state");
-        }
         /*
          * Tests the incoming packages for validity
          */
@@ -271,8 +276,8 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void close() throws IOException {
 
-        if (this.state == State.CLOSED) {
-            return;
+        if (this.state == State.CLOSED || this.state == State.SYN_SENT || this.state == State.SYN_RCVD ) {
+            throw new IllegalStateException("Cannot close from this state");
         }
 
         /*
