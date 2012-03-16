@@ -71,6 +71,7 @@ public class User {
         for (Attending other : invited) {
             other.getPerson().addAppointment(appointment);
             other.getPerson().notify("You are invited to " + appointment.getId() + ". Please respond");
+            // TODO: Push out new object?
         }
     }
 
@@ -185,6 +186,7 @@ public class User {
             // Notifies everyone else
             for (Person other : invited) {
                 other.notify(appointment.getId() + " has changed!");
+                // TODO: Send updated object?
             }
         }
         Query query = new Query();

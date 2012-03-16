@@ -118,10 +118,17 @@ public class Calendar {
         query.createAppointments(personMap, locationMap);
         query.close();
     }
-    
-    public static String Serialize(Object object) throws IOException{
+
+    public static String Serialize(Object object) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            OutputStream out = new ObjectOutputStream(baos);
-            return out.toString();
+        OutputStream out = new ObjectOutputStream(baos);
+        return out.toString();
+        
+        /* 
+            ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
+    ObjectInputStream ois = new ObjectInputStream (bis);
+    obj = ois.readObject();
+    * TO GET BACK
+        */
     }
 }
