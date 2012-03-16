@@ -15,7 +15,7 @@ import no.ntnu.fp.net.co.ConnectionImpl;
  *
  * @author lycantrophe
  */
-public class Calendar {
+public class Server {
 
     /**
      * @param args the command line arguments
@@ -44,6 +44,7 @@ public class Calendar {
                 String pw = conn.receive();
                 if (query.authorize(uname, pw)) {
                     query.close();
+                    conn.send("Login successful");
                     User user = new User(uname);
                     user.bind(conn);
                     conn.send(user.initialSend());
