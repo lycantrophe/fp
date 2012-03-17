@@ -75,7 +75,10 @@ public class User {
         }
     }
 
-    public String initialSend() {
+    public Person initialSend() {
+        
+        return me;
+        /*
         String protocol = me.getUsername();
         Set<String> appointmentIds = me.getAppointmentIds();
 
@@ -89,13 +92,15 @@ public class User {
                 protocol += other.getPerson().getUsername();
             }
         }
-        return protocol;
+        return protocol;*/
     }
 
-    public void deleteAppointment(String id) {
+    public boolean deleteAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
         ArrayList<Attending> invited = appointment.getInvited();
-
+        
+        if( appointment == null ) return false;
+        
         Query query = new Query();
         query.deleteAppointment(appointment);
         for (Attending other : invited) {
@@ -103,12 +108,18 @@ public class User {
             other.getPerson().notify("Appointment" + id + "deleted");
         }
         query.close();
+        return true;
     }
 
     // TODO: Consider merging decline/accept
-    public void declineAppointment(String id) {
+    public boolean declineAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
         ArrayList<Attending> invited = appointment.getInvited();
+        
+        if( appointment == null ){
+            return false;
+        }
+        
 
         Query query = new Query();
         query.updateStatus("DECLINED", appointment, me);
@@ -120,6 +131,7 @@ public class User {
                 other.setStatus(Attending.Status.DECLINED);
             }
         }
+        return true;
     }
 
     public void acceptAppointment(String id) {

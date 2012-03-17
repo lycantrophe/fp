@@ -47,7 +47,8 @@ public class Server {
                     conn.send("Login successful");
                     User user = new User(uname);
                     user.bind(conn);
-                    conn.send(user.initialSend());
+                    // Sends "me" and (hopefully) all structures connected to "me"
+                    conn.send(Serialize(user.initialSend()));
                     String cmd;
                     while ((cmd = conn.receive()) != null) {
                         // Exit if receives end call
@@ -55,19 +56,30 @@ public class Server {
                             break;
                         }
                         // Input should be in the form: command :: arg1 :: arg2 :: arg3 
-                        // where args are json serialized strings
                         String[] opts = cmd.split("::");
                         if (opts[0].equalsIgnoreCase("delete")) {
-                            // takes: delete :: [id]
-                            // TODO: Validate input
-                            user.deleteAppointment(opts[1]);
+
+                            if (user.deleteAppointment(opts[1])) {
+                                // takes: delete :: [id]
+                                // TODO: Validate input
+                                conn.send("delete ACK");
+                            } else {
+                                conn.send("delete FAIL");
+                            }
+
                         } else if (opts[0].equalsIgnoreCase("decline")) {
-                            // takes: decline :: [id]
-                            // TODO: validate input
-                            user.declineAppointment(opts[1]);
+
+                            if (user.declineAppointment(opts[1])) {
+
+                                // takes: decline :: [id]
+                                conn.send("decline ACK");
+                            } else {
+                                conn.send("decline FAIL");
+                            }
                         } else if (opts[0].equalsIgnoreCase("edit")) {
                             // parse json
                             // TODO: validate input
+                            //user.editAppointment(null, null, null, null, cmd, null, null, null); )
                         }
                         /*
                          * do things
@@ -75,8 +87,6 @@ public class Server {
                     }
 
                     // Send notifications
-
-                    // Send calendar info (Serialize data?)
 
                 } else {
                     // TODO: Wrong login handling.
@@ -124,12 +134,19 @@ public class Server {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStream out = new ObjectOutputStream(baos);
         return out.toString();
-        
-        /* 
-            ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
-    ObjectInputStream ois = new ObjectInputStream (bis);
-    obj = ois.readObject();
-    * TO GET BACK
-        */
+
+        /*
+         * ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
+         * ObjectInputStream ois = new ObjectInputStream (bis); obj =
+         * ois.readObject(); TO GET BACK
+         */
+    }
+
+    public static Object Deserialize(String input) throws IOException, ClassNotFoundException {
+
+        byte[] bytes = input.getBytes();
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        ObjectInputStream ois = new ObjectInputStream(bis);
+        return ois.readObject();
     }
 }

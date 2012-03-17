@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.ntnu.fp.net.co.Connection;
 import no.ntnu.fp.net.co.ConnectionImpl;
 
@@ -17,6 +19,7 @@ import no.ntnu.fp.net.co.ConnectionImpl;
  */
 public class Client {
 
+    private static Person me;
     /**
      * @param args the command line arguments
      */
@@ -36,16 +39,21 @@ public class Client {
                     loginSuccess = true;
                 }
             }
-            connection.receive();
+            try {
+                me = (Person)Server.Deserialize(connection.receive());
 
-            /*
-             * Build initial connection data
-             */
+                /*
+                 * Build initial connection data
+                 */
 
-            /*
-             * get messages
-             */
-
+                /*
+                 * get messages
+                 */
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+            // Create GUI  
+            
         } catch (ConnectException e) {
             e.printStackTrace();
         } catch (UnknownHostException e) {

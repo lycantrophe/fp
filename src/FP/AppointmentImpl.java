@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -11,7 +12,7 @@ import java.util.Date;
  *
  * @author lycantrophe
  */
-public class AppointmentImpl implements Appointment {
+public class AppointmentImpl implements Appointment, Serializable {
 
     private Date start;
     private Date end;

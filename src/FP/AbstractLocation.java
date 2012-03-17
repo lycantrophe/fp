@@ -4,11 +4,13 @@
  */
 package FP;
 
+import java.io.Serializable;
+
 /**
  *
  * @author lycantrophe
  */
-public abstract class AbstractLocation implements Location {
+public abstract class AbstractLocation implements Location, Serializable {
 
     protected String name;
     protected int id;

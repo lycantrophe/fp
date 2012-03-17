@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -15,11 +16,11 @@ public interface Appointment {
 
     public ArrayList<Attending> getInvited();
 
-    public ArrayList<Person> getInvitedPersons(); 
-            /**
+    public ArrayList<Person> getInvitedPersons();
+
+    /**
      * @return the start
      */
-
     public Date getStart();
 
     /**

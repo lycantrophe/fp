@@ -4,11 +4,13 @@
  */
 package FP;
 
+import java.io.Serializable;
+
 /**
  *
  * @author lycantrophe
  */
-public class Attending {
+public class Attending implements Serializable {
 
     public enum Status {
 

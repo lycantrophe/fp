@@ -5,6 +5,7 @@
 package FP;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author lycantrophe
  */
-public class Person {
+public class Person implements Serializable {
 
     private String username;
     private String firstname;
