@@ -35,76 +35,15 @@ public class Server {
 
         buildAllObjects();
 
-        try {
-            conn = server.accept();
-
-            Query query = new Query();
+        while (true) {
             try {
-                String uname = conn.receive();
-                String pw = conn.receive();
-                if (query.authorize(uname, pw)) {
-                    query.close();
-                    conn.send("Login successful");
-                    User user = new User(uname);
-                    user.bind(conn);
-                    // Sends "me" and (hopefully) all structures connected to "me"
-                    conn.send(Serialize(user.initialSend()));
-                    String cmd;
-                    while ((cmd = conn.receive()) != null) {
-                        // Exit if receives end call
-                        if (cmd.equalsIgnoreCase("exit")) {
-                            break;
-                        }
-                        // Input should be in the form: command :: arg1 :: arg2 :: arg3 
-                        String[] opts = cmd.split("::");
-                        if (opts[0].equalsIgnoreCase("delete")) {
+                conn = server.accept();
 
-                            if (user.deleteAppointment(opts[1])) {
-                                // takes: delete :: [id]
-                                // TODO: Validate input
-                                conn.send("delete ACK");
-                            } else {
-                                conn.send("delete FAIL");
-                            }
-
-                        } else if (opts[0].equalsIgnoreCase("decline")) {
-
-                            if (user.declineAppointment(opts[1])) {
-
-                                // takes: decline :: [id]
-                                conn.send("decline ACK");
-                            } else {
-                                conn.send("decline FAIL");
-                            }
-                        } else if (opts[0].equalsIgnoreCase("edit")) {
-                            // parse json
-                            // TODO: validate input
-                            //user.editAppointment(null, null, null, null, cmd, null, null, null); )
-                        }
-                        /*
-                         * do things
-                         */
-                    }
-
-                    // Send notifications
-
-                } else {
-                    // TODO: Wrong login handling.
-                    conn.send("Try again!");
-                }
-
-
-            } catch (EOFException e) {
-                query.close();
-                Log.writeToLog("Got close request (EOFException), closing.",
-                        "TestServer");
-                conn.close();
+                Thread thread = new ServerThread(conn);
+                thread.run();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            System.out.println("SERVER TEST FINISHED");
-            Log.writeToLog("TEST SERVER FINISHED", "TestServer");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
