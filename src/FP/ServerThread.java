@@ -22,6 +22,7 @@ public class ServerThread extends Thread {
         this.connection = connection;
     }
     
+    // handle exceptions
     public void run( ) throws ConnectException, IOException {
         Query query = new Query();
             try {
