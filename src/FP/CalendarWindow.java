@@ -41,7 +41,6 @@ public class CalendarWindow extends JFrame {
         //Date date = Calendar.getInstance().getTime();
 
 
-
         /*
          * Build calendar UI
          */
@@ -53,12 +52,5 @@ public class CalendarWindow extends JFrame {
              */
             me.getAppointment(appId);
         }
-    }
-    
-    public void createNewAppointment() {
-        Date start = startdate.getValue();
-        Date end = enddate.getValue();
-        String description = textDescription.getValue();
-        
     }
 }
