@@ -74,7 +74,7 @@ public class CalendarWindow extends JFrame {
             lastday.add( Calendar.DATE, 6 );
             if( isWithinRange( appointment.getStart(), firstday.getTime(), lastday.getTime() ) ){
                 firstday.setTime( appointment.getStart() );
-                // "New JLabel() should be approperiate elemetn
+                // TODO: New JLabel() should be approperiate element
                 dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(new JLabel());
             }
         }
@@ -89,7 +89,7 @@ public class CalendarWindow extends JFrame {
         topPanel = new JPanel();
         add(topPanel, gridConst);
         font = new Font("", Font.BOLD, 20);
-        labelWeek = new JLabel(); // TODO: have to generate week			!!!!!!!!!!!
+        labelWeek = new JLabel();
         labelWeek.setFont(font);
         topPanel.add(labelWeek);
 
