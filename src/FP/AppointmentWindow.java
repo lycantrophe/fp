@@ -6,10 +6,14 @@ package FP;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import no.ntnu.fp.net.co.Connection;
 
@@ -26,6 +30,7 @@ public class AppointmentWindow extends JFrame {
     protected JComboBox comboLocations;
     protected ArrayList<Person> invited;
     protected ArrayList<String> participants;
+    protected ArrayList<Location> locations;
     protected Person me;
     protected Location location;
     protected appWinListener al;
@@ -37,7 +42,16 @@ public class AppointmentWindow extends JFrame {
         al = new appWinListener();
         this.me = me;
         participants = new ArrayList<String>();
-
+        try {
+            connection.send("getLocations");
+            locations = (ArrayList<Location>) Server.Deserialize(connection.receive());
+        } catch (ConnectException ex) {
+            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         this.textDescription = new JTextField();
 
@@ -55,7 +69,7 @@ public class AppointmentWindow extends JFrame {
         this.buttonCancel = new JButton();
 
         invited = new ArrayList<Person>();
-        this.comboLocations = new JComboBox((Location[]) Arrays.asList(locations));
+        this.comboLocations = new JComboBox((Location[]) locations.toArray());
 
         textDescription.setToolTipText("Event description");
 
@@ -79,16 +93,28 @@ public class AppointmentWindow extends JFrame {
 
     public void sendEditAppointment() {
         // Get values somehow
-        //Date startDate = spinnerStartDate.getValue();
-        //Date endDate = spinnerEndDate.getValue();
+        Date startDate = (Date) spinnerStartDate.getValue();
+        Date endDate = (Date) spinnerEndDate.getValue();
         // TODO: Get values from fields
 
         String description = textDescription.getText();
-
+        
+        ArrayList<Attending> attending = new ArrayList<Attending>();
+        for( Person other : invited ){
+            attending.add(new Attending(other));
+        }
         // TODO: Handle connection and sending exceptions
-        Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, invited, participants, location);
-        String serialized = Server.Serialize(appointment);
-        connection.send("create::" + serialized);
+        Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, participants, location);
+        try {
+            String serialized = Server.Serialize(appointment);
+            connection.send("create::" + serialized);
+            appointment = (Appointment) Server.Deserialize(connection.receive());
+        } catch (IOException e) {
+            // Implement exception handling
+        } catch (ClassNotFoundException e) {
+            // Implement exception handling
+        }
+        // Add appointment to calendar
     }
 
     protected class appWinListener implements ActionListener {
