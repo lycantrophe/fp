@@ -16,8 +16,12 @@ public class EditAppointmentWindow extends AppointmentWindow {
         super( connection, me );
         spinnerStartDate.setValue(appointment.getStart());
         spinnerEndDate.setValue(appointment.getEnd());
+        
         textDescription.setText(appointment.getDescription());
         invited = appointment.getInvitedPersons();
         participants = appointment.getParticipants();
+        
+        // TODO: Add support for changing owner
     }
+    
 }

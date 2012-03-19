@@ -11,4 +11,5 @@ package FP;
 public interface Location {
     
     public String getName();
+    public int getId();
 }

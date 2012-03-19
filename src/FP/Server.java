@@ -65,7 +65,7 @@ public class Server {
 
         // Create appointments
 
-        query.createAppointments(personMap, locationMap);
+        query.createAllAppointments(personMap, locationMap);
         query.close();
     }
 

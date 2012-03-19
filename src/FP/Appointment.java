@@ -17,6 +17,8 @@ public interface Appointment {
     public ArrayList<Attending> getInvited();
 
     public ArrayList<Person> getInvitedPersons();
+    
+    public void setId(String id);
 
     /**
      * @return the start
@@ -44,10 +46,10 @@ public interface Appointment {
     public Location getLocation();
 
     /**
-     * @return the location
+     * @return the Id
      */
     public String getId();
-
+    
     /**
      * @return the participants
      */
@@ -87,4 +89,6 @@ public interface Appointment {
      * @param invited the invited to set
      */
     public void setInvited(ArrayList<Attending> invited);
+    
+    public void clone(Appointment appointment);
 }

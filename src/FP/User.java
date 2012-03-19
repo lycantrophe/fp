@@ -49,13 +49,10 @@ public class User {
      *
      * @param location Location. Can be null
      */
-    public void createAppointment(Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
+    public void createAppointment(Appointment newAppointment) {
 
-        Appointment appointment;
         // TODO: Add restrictions checking, throw error
         // TODO: Add restrictions to location. Should be in appointment constructor?
-        appointment = new AppointmentImpl(me, start, end, description, invited, participants, location);
-
 
         Query query = new Query();
         /*
@@ -63,44 +60,43 @@ public class User {
          * will not change and noone will be notified (but entries will be added
          * to the database figure out a way to handle
          */
-        query.addAppointment(appointment, appointment.getInvitedPersons());
-        query.updateStatus("ATTENDING", appointment, me);
+        query.addAppointment(newAppointment, newAppointment.getInvitedPersons());
+        query.updateStatus("ATTENDING", newAppointment, me);
         query.close();
 
         // Give this appointment to everyone invited
-        for (Attending other : invited) {
-            other.getPerson().addAppointment(appointment);
-            other.getPerson().notify("You are invited to " + appointment.getId() + ". Please respond");
+        for (Attending other : newAppointment.getInvited()) {
+            other.getPerson().addAppointment(newAppointment);
+            other.getPerson().notify("You are invited to " + newAppointment.getId() + ". Please respond");
             // TODO: Push out new object?
         }
     }
 
     public Person initialSend() {
-        
+
         return me;
         /*
-        String protocol = me.getUsername();
-        Set<String> appointmentIds = me.getAppointmentIds();
-
-        // Iterate over appointments
-        for (String appointment : appointmentIds) {
-
-            ArrayList<Attending> invited = me.getInvited(appointment);
-            // Get all participants
-            for (Attending other : invited) {
-                // TODO: add protocol parameters for serializing objects
-                protocol += other.getPerson().getUsername();
-            }
-        }
-        return protocol;*/
+         * String protocol = me.getUsername(); Set<String> appointmentIds =
+         * me.getAppointmentIds();
+         *
+         * // Iterate over appointments for (String appointment :
+         * appointmentIds) {
+         *
+         * ArrayList<Attending> invited = me.getInvited(appointment); // Get all
+         * participants for (Attending other : invited) { // TODO: add protocol
+         * parameters for serializing objects protocol +=
+         * other.getPerson().getUsername(); } } return protocol;
+         */
     }
 
     public boolean deleteAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
         ArrayList<Attending> invited = appointment.getInvited();
-        
-        if( appointment == null ) return false;
-        
+
+        if (appointment == null) {
+            return false;
+        }
+
         Query query = new Query();
         query.deleteAppointment(appointment);
         for (Attending other : invited) {
@@ -115,11 +111,11 @@ public class User {
     public boolean declineAppointment(String id) {
         Appointment appointment = me.getAppointment(id);
         ArrayList<Attending> invited = appointment.getInvited();
-        
-        if( appointment == null ){
+
+        if (appointment == null) {
             return false;
         }
-        
+
 
         Query query = new Query();
         query.updateStatus("DECLINED", appointment, me);
@@ -157,46 +153,32 @@ public class User {
      * @param appointment Appointment to change
      * @param newAppointment Appointment object with changes
      */
-    public void editAppointment(Appointment appointment, Date start, Date end, Person owner, String description, ArrayList<Person> invited, ArrayList<String> participants, Location location) {
+    public void editAppointment(String oldId, Appointment newAppointment) {
+        
+        Appointment appointment = me.getAppointment(oldId);
+        
+        ArrayList<Person> oldInvited = appointment.getInvitedPersons();
+        
+        appointment.clone(newAppointment);
 
-        if (appointment.getStart() != null && !start.equals(appointment.getStart())) {
-            appointment.setStart(start);
-        }
-        if (appointment.getEnd() != null && !end.equals(appointment.getEnd())) {
-            appointment.setEnd(end);
-        }
-        if (appointment.getOwner() != null && !owner.equals(appointment.getOwner())) {
-            appointment.setOwner(owner);
-        }
-        if (appointment.getDescription() != null && !description.equals(appointment.getDescription())) {
-            appointment.setDescription(description);
-        }
-        if (appointment.getLocation() != null && !location.equals(appointment.getLocation())) {
-            appointment.setLocation(location);
-        }
-        if (appointment.getParticipants() != null && !participants.equals(appointment.getParticipants())) {
-            appointment.setParticipants(participants);
-        }
+        ArrayList<Person> newInvited = newAppointment.getInvitedPersons();
 
-        ArrayList<Person> oldInvited = invited;
-        ArrayList<Person> newInvited = oldInvited;
+        if (newInvited.size() > 1 || oldInvited.size() > 1) {
 
-        if (invited.size() > 1 || appointment.getInvited().size() > 1) {
-
-            oldInvited.removeAll(invited);
+            oldInvited.removeAll(newInvited);
             newInvited.removeAll(oldInvited);
 
             // Remove owner from the list so he does not get notifications
             // TODO: Support for changing owner? If so: handle cases where people have been removed/added and the new owner shall receive notification
-            invited.remove(owner);
-            oldInvited.remove(owner);
+            newInvited.remove(newAppointment.getOwner());
+            oldInvited.remove(newAppointment.getOwner());
             // Notifies everyone removed from the meeting
             for (Person removed : oldInvited) {
                 removed.notify("You have been removed from " + appointment.getId());
             }
 
             // Notifies everyone else
-            for (Person other : invited) {
+            for (Person other : newInvited) {
                 other.notify(appointment.getId() + " has changed!");
                 // TODO: Send updated object?
             }
