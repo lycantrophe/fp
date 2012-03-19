@@ -496,6 +496,7 @@ public abstract class AbstractConnection implements Connection {
                         synchronized (this) {
                             internalQueue.add(incomingPacket);
                             isReceiving = false;
+                            
                             notifyAll();
                         }
                         return receivePacket(internal);
@@ -504,6 +505,7 @@ public abstract class AbstractConnection implements Connection {
                 else {
                     // Packet was meant for the application, yei!
                     Log.writeToLog("Received an external packet in doReceive", "AbstractConnection");
+                    Log.writeToLog("Received package: " + incomingPacket.getPayload().toString(), "AbstractConnection");
     
                     synchronized (this) {
                         isReceiving = false;
