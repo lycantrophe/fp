@@ -67,7 +67,7 @@ public class Query {
         try {
             // This should remove all entries in AppointmentRel
             statement = con.prepareStatement("DELETE FROM Appointment WHERE ID = ?");
-            statement.setInt(1, appointment.getId());
+            statement.setString(1, appointment.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             /*
@@ -218,12 +218,12 @@ public class Query {
             statement = con.prepareStatement("INSERT INTO Appointment ( owner, start, end, description, location)"
                     + "VALUES( ?, ?, ?, ?, ? )");
             statement.setString(1, appointment.getOwner().getUsername());
-            statement.setTime(2, java.sql.Time(appointment.getStart()));
-            statement.setTime(3, java.sql.Time(appointment.getEnd()));
+            statement.setTime(2, new java.sql.Time(appointment.getStart().getTime()));
+            statement.setTime(3, new java.sql.Time(appointment.getEnd().getTime()));
             statement.setString(4, appointment.getDescription());
             statement.setInt(5, appointment.getLocation().getId());
             rs = statement.getGeneratedKeys();
-            
+
             appointment.setId(rs.getString("ID"));
         } catch (SQLException e) {
             /*
