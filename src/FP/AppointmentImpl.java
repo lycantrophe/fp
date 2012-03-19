@@ -20,31 +20,43 @@ public class AppointmentImpl implements Appointment, Serializable {
     private String description;
     private Location location;
     private ArrayList<String> participants;
-    private ArrayList< Attending > invited;
+    private ArrayList< Attending> invited;
     private String id;
 
     public AppointmentImpl(Person owner, Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
         this.owner = owner;
         this.start = start;
         this.end = end;
-        this.id = "newId()";
         this.description = description;
         this.participants = participants;
         this.location = location;
         this.invited = invited;
         invited.add(new Attending(owner, Attending.Status.ATTENDING));
     }
+    
+    public AppointmentImpl() {
+        // Empty (designed to be cloned)
+    }
 
     public ArrayList<Attending> getInvited() {
         return invited;
     }
-    
+
     public ArrayList<Person> getInvitedPersons() {
         ArrayList persons = new ArrayList<Person>();
-        for( Attending other : invited ){
+        for (Attending other : invited) {
             persons.add(other.getPerson());
         }
         return persons;
+    }
+
+    public void clone(Appointment appointment) {
+        this.start = appointment.getStart();
+        this.end = appointment.getEnd();
+        this.description = appointment.getDescription();
+        this.owner = appointment.getOwner();
+        this.location = appointment.getLocation();
+        this.participants = appointment.getParticipants();
     }
 
     public Date getStart() {
@@ -63,9 +75,6 @@ public class AppointmentImpl implements Appointment, Serializable {
         return description;
     }
 
-    public String getId() {
-        return id;
-    }
 
     public Location getLocation() {
         return location;
@@ -75,6 +84,10 @@ public class AppointmentImpl implements Appointment, Serializable {
         return participants;
     }
 
+    public void setId(String id){
+        this.id = id;
+    }
+    
     public void setStart(Date start) {
         this.start = start;
     }
@@ -101,5 +114,9 @@ public class AppointmentImpl implements Appointment, Serializable {
 
     public void setInvited(ArrayList<Attending> invited) {
         this.invited = invited;
+    }
+    
+    public String getId() {
+        return id;
     }
 }
