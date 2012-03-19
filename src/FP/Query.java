@@ -67,7 +67,7 @@ public class Query {
         try {
             // This should remove all entries in AppointmentRel
             statement = con.prepareStatement("DELETE FROM Appointment WHERE ID = ?");
-            statement.setString(1, appointment.getId());
+            statement.setInt(1, appointment.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             /*
@@ -85,7 +85,7 @@ public class Query {
              */
         }
     }
-    
+
     public void updateStatus(String status, Appointment appointment, Person person) {
 
         String query;
@@ -159,7 +159,7 @@ public class Query {
         return persons;
     }
 
-    public void createAppointments(Map<String, Person> persons, Map<String, Location> locations) {
+    public void createAllAppointments(Map<String, Person> persons, Map<String, Location> locations) {
 
         HashMap<String, ArrayList<Attending>> appointments = new HashMap<String, ArrayList<Attending>>();
         try {
@@ -207,6 +207,30 @@ public class Query {
              * Handle exception
              */
         }
+    }
+
+    public Appointment createAppointment(Appointment newAppointment) {
+        Appointment appointment = new AppointmentImpl();
+        appointment.clone(newAppointment);
+        ResultSet rs;
+
+        try {
+            statement = con.prepareStatement("INSERT INTO Appointment ( owner, start, end, description, location)"
+                    + "VALUES( ?, ?, ?, ?, ? )");
+            statement.setString(1, appointment.getOwner().getUsername());
+            statement.setTime(2, java.sql.Time(appointment.getStart()));
+            statement.setTime(3, java.sql.Time(appointment.getEnd()));
+            statement.setString(4, appointment.getDescription());
+            statement.setInt(5, appointment.getLocation().getId());
+            rs = statement.getGeneratedKeys();
+            
+            appointment.setId(rs.getString("ID"));
+        } catch (SQLException e) {
+            /*
+             * handle exception
+             */
+        }
+        return appointment;
     }
 
     public ArrayList<Location> getLocations() {
