@@ -4,7 +4,6 @@
  */
 package FP;
 
-import com.sun.java.swing.plaf.gtk.GTKConstants;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,17 +50,33 @@ public class CalendarWindow extends JFrame {
         daysFont = new Font("", Font.PLAIN, 16);
 
         drawWindow();
+        mapAppointments();
         //c.add(Calendar.DATE, -(c.get(Calendar.DAY_OF_WEEK) + i));
 
     }
 
     private void mapAppointments() {
         labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR));
+        
+        /*
+         * Remove entries belonging to wrong week
+         */
+        
+        Appointment appointment;
         for (String appId : me.getAppointmentIds()) {
             /*
              * Map appointments to the proper days
              */
-            me.getAppointment(appId);
+            appointment = me.getAppointment(appId);
+            Calendar firstday = today;
+            firstday.add( Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK)+1 ) );
+            Calendar lastday = firstday;
+            lastday.add( Calendar.DATE, 6 );
+            if( isWithinRange( appointment.getStart(), firstday.getTime(), lastday.getTime() ) ){
+                firstday.setTime( appointment.getStart() );
+                // "New JLabel() should be approperiate elemetn
+                dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(new JLabel());
+            }
         }
     }
 
