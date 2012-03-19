@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -36,6 +37,7 @@ public class CalendarWindow extends JFrame {
     private GridBagConstraints gridConst;
     private Calendar today;
     private ArrowButtonListener arrowListener;
+    private ButtonListener buttonListener;
 
     public CalendarWindow(Connection connection) throws IOException, ClassNotFoundException {
 
@@ -47,6 +49,9 @@ public class CalendarWindow extends JFrame {
 
         thisWeek = new HashMap<String, Calendar>();
 
+        arrowListener = new ArrowButtonListener();
+        buttonListener = new ButtonListener();
+
         daysFont = new Font("", Font.PLAIN, 16);
 
         drawWindow();
@@ -57,11 +62,11 @@ public class CalendarWindow extends JFrame {
 
     private void mapAppointments() {
         labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR));
-        
+
         /*
          * Remove entries belonging to wrong week
          */
-        
+
         Appointment appointment;
         for (String appId : me.getAppointmentIds()) {
             /*
@@ -69,11 +74,11 @@ public class CalendarWindow extends JFrame {
              */
             appointment = me.getAppointment(appId);
             Calendar firstday = today;
-            firstday.add( Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK)+1 ) );
+            firstday.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
             Calendar lastday = firstday;
-            lastday.add( Calendar.DATE, 6 );
-            if( isWithinRange( appointment.getStart(), firstday.getTime(), lastday.getTime() ) ){
-                firstday.setTime( appointment.getStart() );
+            lastday.add(Calendar.DATE, 6);
+            if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
+                firstday.setTime(appointment.getStart());
                 // TODO: New JLabel() should be approperiate element
                 dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(new JLabel());
             }
@@ -96,7 +101,6 @@ public class CalendarWindow extends JFrame {
         /*
          * Arrow panels
          */
-        arrowListener = new ArrowButtonListener();
         gridConst.gridx = 0;
         gridConst.gridy = 1;
         gridConst.ipady = 300;
@@ -150,19 +154,19 @@ public class CalendarWindow extends JFrame {
         gridBottom.gridx = 0;
         gridBottom.weightx = 10;
         newEventButton = new JButton("New Appointment");
-        newEventButton.addActionListener(new NewEventButtonAction());
+        newEventButton.addActionListener(buttonListener);
         bottomPanel.add(newEventButton, gridBottom);
 
         gridBottom.gridx = 1;
         gridBottom.weightx = 10;
         addCalendarButton = new JButton("Add Calendar");
-        addCalendarButton.addActionListener(new AddCalendarButtomAction());
+        addCalendarButton.addActionListener(buttonListener);
         bottomPanel.add(addCalendarButton, gridBottom);
 
         gridBottom.gridx = 2;
         gridBottom.weightx = 10;
         removeCalendarButton = new JButton("Remove Calendar");
-        removeCalendarButton.addActionListener(new RemoveCalendarButtomAction());
+        removeCalendarButton.addActionListener(buttonListener);
         bottomPanel.add(removeCalendarButton, gridBottom);
         // Determine what week this is
 
@@ -188,6 +192,10 @@ public class CalendarWindow extends JFrame {
         dayColumns[i].setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     }
 
+    private boolean isWithinRange(Date date, Date start, Date end) {
+        return !(date.before(start) || date.after(end));
+    }
+
     /*
      * Arrow action classes
      */
@@ -202,33 +210,28 @@ public class CalendarWindow extends JFrame {
             mapAppointments();
         }
     }
-    
+
     /*
      * bottomPanel buttons action classes
      */
-
-    private class NewEventButtonAction implements ActionListener {
-
-        public void actionPerformed(ActionEvent ae) {
-            // TODO: 
-        }
-    }
-
-    private class AddCalendarButtomAction implements ActionListener {
+    private class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent ae) {
-            // TODO: 
+            if (ae.getSource() == addCalendarButton) {
+                /*
+                 * TODO: Implement addCalendar
+                 */
+            } else if (ae.getSource() == newEventButton) {
+                
+                AppointmentWindow appWin = new AppointmentWindow(connection, me);
+                appWin.pack();
+                appWin.setVisible(true);
+                
+            } else if (ae.getSource() == removeCalendarButton) {
+                /*
+                 * TODO: Implement removeCalendar()
+                 */
+            }
         }
-    }
-
-    private class RemoveCalendarButtomAction implements ActionListener {
-
-        public void actionPerformed(ActionEvent ae) {
-            // TODO: 
-        }
-    }
-
-    boolean isWithinRange(Date date, Date start, Date end) {
-        return !(date.before(start) || date.after(end));
     }
 }
