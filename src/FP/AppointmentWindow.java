@@ -24,16 +24,20 @@ public class AppointmentWindow extends JFrame implements ActionListener {
     protected Connection connection;
     protected JTextField textDescription;
     protected JSpinner spinnerStartDate, spinnerEndDate, spinnerStartTime, spinnerEndTime;
-    protected JButton buttonInvite, buttonAddParticipant, buttonLocation;
+    protected JButton buttonInvite, buttonAddParticipant, buttonNewLocation;
+    protected JComboBox comboLocations;
     protected ArrayList<Person> invited;
     protected ArrayList<String> participants;
     protected Person me;
-
+    protected Location location;
+    protected appWinListener al;
+    
     public AppointmentWindow(Connection connection, Person me) {
 
         this.connection = connection;
         Date date = new Date();
-
+        al = new appWinListener();
+        
         this.textDescription = new JTextField();
 
         // Date pickers
@@ -45,7 +49,8 @@ public class AppointmentWindow extends JFrame implements ActionListener {
 
         this.buttonInvite = new JButton();
         this.buttonAddParticipant = new JButton();
-        this.buttonLocation = new JButton();
+        this.buttonNewLocation = new JButton();
+        this.comboLocations = new JComboBox((Location[]) Arrays.asList(locations));
         invited = new ArrayList<Person>();
         this.me = me;
 
@@ -59,11 +64,14 @@ public class AppointmentWindow extends JFrame implements ActionListener {
         spinnerEndTime.setEditor(timeSpinnerEnd);
 
         buttonInvite.setText("Invite people");
+        buttonInvite.addActionListener(al);
 
-        buttonLocation.setText("Set location");
-
+        buttonNewLocation.setText("Add location");
+        buttonNewLocation.addActionListener(al);
+        comboLocations.addActionListener(al);
 
         buttonAddParticipant.setText("Add external participants");
+        buttonAddParticipant.addActionListener(al);
     }
 
     public void sendEditAppointment() {
@@ -77,26 +85,62 @@ public class AppointmentWindow extends JFrame implements ActionListener {
         connection.send("create::" + serialized);
     }
 
-    public void actionPerformed(ActionEvent e) {
+    protected class appWinListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent ae) {
+            if (ae.getSource() == buttonInvite) {
+                InvitePeople inv = new InvitePeople();
+            } else if (ae.getSource() == buttonNewLocation) {
+                /*
+                 * fix
+                 */
+            } else if (ae.getSource() == buttonAddParticipant) {
+            } else if (ae.getSource() == comboLocations) {
+                location = (Location) comboLocations.getSelectedItem();
+            }
+        }
     }
 
-    private class invitePeople extends JFrame {
+    protected class InvitePeople extends JFrame {
 
-        JList invitees;
+        private JList invitees;
+        private JButton buttonDone;
+        private JButton buttonCancel;
+        invAction al;
 
-        public invitePeople() {
+        public InvitePeople() {
             // availiblePersons is the arraylist of registered persons ;
 
             ArrayList<Person> testList = new ArrayList<Person>();
             invitees = new JList(testList.toArray());
             JScrollPane scrollPane = new JScrollPane(invitees);
             add(scrollPane);
+
+            al = new invAction();
+            buttonDone = new JButton();
+            buttonCancel = new JButton();
+
+            buttonDone.addActionListener(al);
+            buttonCancel.addActionListener(al);
+
+            add(buttonDone);
+            add(buttonCancel);
         }
 
         public ArrayList<Person> getInvited() {
             ArrayList<Person> persons = new ArrayList<Person>();
             persons.addAll(Arrays.asList((Person[]) invitees.getSelectedValues()));
             return persons;
+        }
+
+        private class invAction implements ActionListener {
+
+            public void actionPerformed(ActionEvent ae) {
+                if (ae.getSource() == buttonDone) {
+                    // giveListToParent(getInvited);
+                }
+                dispose();
+            }
         }
     }
 }
