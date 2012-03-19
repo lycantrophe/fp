@@ -20,7 +20,7 @@ public class AppointmentImpl implements Appointment, Serializable {
     private String description;
     private Location location;
     private ArrayList<String> participants;
-    private ArrayList< Attending> invited;
+    private ArrayList<Attending> invited;
     private String id;
 
     public AppointmentImpl(Person owner, Date start, Date end, String description, ArrayList<Attending> invited, ArrayList<String> participants, Location location) {
