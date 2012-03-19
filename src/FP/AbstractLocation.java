@@ -27,4 +27,7 @@ public abstract class AbstractLocation implements Location, Serializable {
     public String getName() {
         return name;
     }
+    public int getId() {
+        return id;
+    }
 }
