@@ -4,8 +4,6 @@
  */
 package FP;
 
-import java.awt.Checkbox;
-import java.awt.CheckboxGroup;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -19,25 +17,28 @@ import no.ntnu.fp.net.co.Connection;
  *
  * @author lycantrophe
  */
-public class AppointmentWindow extends JFrame implements ActionListener {
+public class AppointmentWindow extends JFrame {
 
     protected Connection connection;
     protected JTextField textDescription;
     protected JSpinner spinnerStartDate, spinnerEndDate, spinnerStartTime, spinnerEndTime;
-    protected JButton buttonInvite, buttonAddParticipant, buttonNewLocation;
+    protected JButton buttonInvite, buttonAddParticipant, buttonNewLocation, buttonSave, buttonCancel;
     protected JComboBox comboLocations;
     protected ArrayList<Person> invited;
     protected ArrayList<String> participants;
     protected Person me;
     protected Location location;
     protected appWinListener al;
-    
+
     public AppointmentWindow(Connection connection, Person me) {
 
         this.connection = connection;
         Date date = new Date();
         al = new appWinListener();
+        this.me = me;
+        participants = new ArrayList<String>();
         
+
         this.textDescription = new JTextField();
 
         // Date pickers
@@ -50,9 +51,11 @@ public class AppointmentWindow extends JFrame implements ActionListener {
         this.buttonInvite = new JButton();
         this.buttonAddParticipant = new JButton();
         this.buttonNewLocation = new JButton();
-        this.comboLocations = new JComboBox((Location[]) Arrays.asList(locations));
+        this.buttonSave = new JButton();
+        this.buttonCancel = new JButton();
+
         invited = new ArrayList<Person>();
-        this.me = me;
+        this.comboLocations = new JComboBox((Location[]) Arrays.asList(locations));
 
         textDescription.setToolTipText("Event description");
 
@@ -76,10 +79,13 @@ public class AppointmentWindow extends JFrame implements ActionListener {
 
     public void sendEditAppointment() {
         // Get values somehow
-        Date startDate = spinnerStartDate.getValue();
-        Date endDate = spinnerEndDate.getValue();
+        //Date startDate = spinnerStartDate.getValue();
+        //Date endDate = spinnerEndDate.getValue();
+        // TODO: Get values from fields
+        
         String description = textDescription.getText();
 
+        // TODO: Handle connection and sending exceptions
         Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, invited, participants, location);
         String serialized = Server.Serialize(appointment);
         connection.send("create::" + serialized);
@@ -90,13 +96,20 @@ public class AppointmentWindow extends JFrame implements ActionListener {
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == buttonInvite) {
                 InvitePeople inv = new InvitePeople();
+                // TODO: Make window visible (and later modal if possible)
             } else if (ae.getSource() == buttonNewLocation) {
-                /*
-                 * fix
-                 */
+                // TODO: Implement Location creation and selection
             } else if (ae.getSource() == buttonAddParticipant) {
+                // TODO: Implement participant creation
             } else if (ae.getSource() == comboLocations) {
                 location = (Location) comboLocations.getSelectedItem();
+            }
+            else if ( ae.getSource() == buttonSave ){
+                sendEditAppointment();
+                dispose();
+            }
+            else if( ae.getSource() == buttonCancel ){
+                dispose();
             }
         }
     }
@@ -106,7 +119,7 @@ public class AppointmentWindow extends JFrame implements ActionListener {
         private JList invitees;
         private JButton buttonDone;
         private JButton buttonCancel;
-        invAction al;
+        private invAction al;
 
         public InvitePeople() {
             // availiblePersons is the arraylist of registered persons ;
@@ -137,6 +150,7 @@ public class AppointmentWindow extends JFrame implements ActionListener {
 
             public void actionPerformed(ActionEvent ae) {
                 if (ae.getSource() == buttonDone) {
+                    // TODO: Implement announcment of selected values in this list
                     // giveListToParent(getInvited);
                 }
                 dispose();
