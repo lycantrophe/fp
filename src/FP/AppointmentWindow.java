@@ -37,7 +37,7 @@ public class AppointmentWindow extends JFrame {
         al = new appWinListener();
         this.me = me;
         participants = new ArrayList<String>();
-        
+
 
         this.textDescription = new JTextField();
 
@@ -82,7 +82,7 @@ public class AppointmentWindow extends JFrame {
         //Date startDate = spinnerStartDate.getValue();
         //Date endDate = spinnerEndDate.getValue();
         // TODO: Get values from fields
-        
+
         String description = textDescription.getText();
 
         // TODO: Handle connection and sending exceptions
@@ -103,12 +103,10 @@ public class AppointmentWindow extends JFrame {
                 // TODO: Implement participant creation
             } else if (ae.getSource() == comboLocations) {
                 location = (Location) comboLocations.getSelectedItem();
-            }
-            else if ( ae.getSource() == buttonSave ){
+            } else if (ae.getSource() == buttonSave) {
                 sendEditAppointment();
                 dispose();
-            }
-            else if( ae.getSource() == buttonCancel ){
+            } else if (ae.getSource() == buttonCancel) {
                 dispose();
             }
         }

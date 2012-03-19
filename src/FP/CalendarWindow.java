@@ -28,6 +28,8 @@ public class CalendarWindow extends JFrame {
     
     public CalendarWindow(Connection connection) throws IOException, ClassNotFoundException {
         
+        me = (Person) Server.Deserialize(connection.receive());
+        
         monday = new JPanel();
         tuesday = new JPanel();
         wednesday = new JPanel();

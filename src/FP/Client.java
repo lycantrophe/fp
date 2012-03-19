@@ -19,8 +19,8 @@ import no.ntnu.fp.net.co.ConnectionImpl;
  * @author lycantrophe
  */
 public class Client {
-
     private static Connection connection;
+    private static Login login;
 
     /**
      * @param args the command line arguments
@@ -38,11 +38,15 @@ public class Client {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Login login = new Login(connection);
+        login = new Login(connection);
+        login.pack();
+        login.setVisible(true);
     }
 
-    public void loginSuccessful() throws IOException, ClassNotFoundException {
-        //me = (Person) Server.Deserialize(connection.receive());
+    public static void loginSuccessful() throws IOException, ClassNotFoundException {
+        login.dispose();
         CalendarWindow calwin = new CalendarWindow(connection);
+        calwin.pack();
+        calwin.setVisible(true);
     }
 }

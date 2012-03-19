@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import no.ntnu.fp.net.co.Connection;
 
@@ -64,9 +66,14 @@ class Login extends JFrame implements ActionListener {
         }
 
         if (success.equals("Login successful")) {
-            /*
-             * Start program
-             */
+            try {
+                // Starts the actual program and destroyes the login window
+                Client.loginSuccessful();
+            } catch (IOException ex) {
+                // TODO: Handle or move exception
+            } catch (ClassNotFoundException ex) {
+                // TODO: Handle or move exception
+            }
         } else {
             System.out.println("enter the valid username and password");
             JOptionPane.showMessageDialog(this, "Incorrect login or password",
