@@ -8,7 +8,9 @@ package FP;
  *
  * @author lycantrophe
  */
-public interface Location {
-    
-    public String getName();
+public class OtherLocation extends AbstractLocation {
+
+    public OtherLocation(String name) {
+        super(name);
+    }
 }
