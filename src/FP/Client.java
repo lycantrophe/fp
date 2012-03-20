@@ -19,6 +19,7 @@ import no.ntnu.fp.net.co.ConnectionImpl;
  * @author lycantrophe
  */
 public class Client {
+
     private static Connection connection;
     private static Login login;
 
@@ -44,9 +45,10 @@ public class Client {
     }
 
     public static void loginSuccessful() throws IOException, ClassNotFoundException {
-        login.dispose();
+
         CalendarWindow calwin = new CalendarWindow(connection);
         calwin.pack();
         calwin.setVisible(true);
+        login.dispose();
     }
 }

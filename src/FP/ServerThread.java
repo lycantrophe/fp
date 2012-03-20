@@ -20,10 +20,8 @@ import no.ntnu.fp.net.co.Connection;
 public class ServerThread extends Thread {
 
     private Connection connection;
-    private Map<String, Person> persons;
-    private Map<String, Location> locations;
 
-    public ServerThread(Connection connection, Map<String, Person> persons, Map<String, Location> locations) {
+    public ServerThread(Connection connection) {
         this.connection = connection;
     }
 
@@ -45,8 +43,8 @@ public class ServerThread extends Thread {
                 connection.send(Server.Serialize(user.initialSend()));
 
                 // Sends other needed data structures
-                connection.send(Server.Serialize(persons));
-                connection.send(Server.Serialize(locations));
+                connection.send(Server.Serialize(Server.persons));
+                connection.send(Server.Serialize(Server.locations));
 
                 String cmd;
                 while ((cmd = connection.receive()) != null) {

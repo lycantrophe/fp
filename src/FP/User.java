@@ -30,6 +30,9 @@ public class User {
      */
     public User(String myPerson) {
         me = personMap.get(myPerson);
+        if( me == null ){
+            System.out.println("Holy fuck me not gotten from personMap: " + myPerson);
+        }
     }
 
     public void bind(Connection connection) {

@@ -17,8 +17,8 @@ import no.ntnu.fp.net.co.ConnectionImpl;
  */
 public class Server {
 
-    private static Map<String, Person> persons;
-    private static Map<String, Location> locations;
+    public static Map<String, Person> persons;
+    public static Map<String, Location> locations;
     /**
      * @param args the command line arguments
      */
@@ -42,7 +42,7 @@ public class Server {
             try {
                 conn = server.accept();
 
-                Thread thread = new ServerThread(conn, persons, locations );
+                Thread thread = new ServerThread( conn );
                 thread.run();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -53,7 +53,7 @@ public class Server {
     private static void buildAllObjects() {
 
         Query query = new Query();
-        Map<String, Person> persons = new HashMap<String, Person>();
+        persons = new HashMap<String, Person>();
         // Get persons
         for (Person other : query.getPersons()) {
             User.addPerson(other);
