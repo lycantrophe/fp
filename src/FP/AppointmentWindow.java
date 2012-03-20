@@ -9,23 +9,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
 import javax.swing.JSpinner.DateEditor;
-import javax.swing.JTextField;
-import javax.swing.SpinnerDateModel;
-
+import javax.swing.*;
 import no.ntnu.fp.net.co.Connection;
 
 /**
@@ -37,7 +23,7 @@ public class AppointmentWindow extends JFrame {
     protected Connection connection;
     protected JTextField textDescription, txtLocation;
     protected JSpinner spinnerStartDate, spinnerEndDate, spinnerStartTime, spinnerEndTime;
-    protected JButton buttonInvite, buttonAddParticipant, btnReserveRoom, buttonSave, buttonCancel;
+    protected JButton buttonInvite, buttonSave, buttonCancel;
     protected ArrayList<Person> invited;
     protected ArrayList<String> participants;
     protected Map<String, Location> locations;
@@ -56,7 +42,7 @@ public class AppointmentWindow extends JFrame {
         InitializeGUI();
     }
     
-    public void InitializeGUI()
+    protected void InitializeGUI()
     {
     	Date date = new Date();
     	
@@ -74,13 +60,8 @@ public class AppointmentWindow extends JFrame {
         spinnerEndTime.setEditor(new DateEditor(spinnerEndTime, "kk:mm"));
         
     	txtLocation = new JTextField(16);
-        btnReserveRoom = new JButton("Reserver rom");
-        btnReserveRoom.addActionListener(al);
         buttonInvite = new JButton("Invite people");
         buttonInvite.addActionListener(al);
-        
-        buttonAddParticipant = new JButton("Add external participants");
-        buttonAddParticipant.addActionListener(al);
         
         buttonSave = new JButton("Save");
         buttonCancel = new JButton("Cancel");
@@ -98,11 +79,9 @@ public class AppointmentWindow extends JFrame {
         
         JPanel loc = new JPanel();
         loc.add(txtLocation);
-        loc.add(btnReserveRoom);
         
         JPanel par = new JPanel();
         par.add(buttonInvite);
-        par.add(buttonAddParticipant);
         
         JPanel big = new JPanel();
         big.setLayout(new GridBagLayout());
@@ -111,15 +90,15 @@ public class AppointmentWindow extends JFrame {
         c.anchor = GridBagConstraints.LINE_START;
         c.gridx = 0;
         c.gridy = 0;
-        big.add(new JLabel("Beskrivelse:"), c);
+        big.add(new JLabel("Description:"), c);
         c.gridy = 1;
-        big.add(new JLabel("Fra:"), c);
+        big.add(new JLabel("From:"), c);
         c.gridy = 2;
-        big.add(new JLabel("Til:"), c);
+        big.add(new JLabel("To:"), c);
         c.gridy = 3;
-        big.add(new JLabel("Sted:"), c);
+        big.add(new JLabel("Location:"), c);
         c.gridy = 4;
-        big.add(new JLabel("Deltakere:"), c);
+        big.add(new JLabel("Participants:"), c);
         
         c.gridx = 1;
         c.gridy = 0;
@@ -182,11 +161,6 @@ public class AppointmentWindow extends JFrame {
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == buttonInvite) {
                 InvitePeople inv = new InvitePeople();
-                // TODO: Make window visible (and later modal if possible)
-            } else if (ae.getSource() == btnReserveRoom) {
-                // TODO: Implement Location creation and selection
-            } else if (ae.getSource() == buttonAddParticipant) {
-                // TODO: Implement participant creation
             }else if (ae.getSource() == buttonSave) {
                 sendEditAppointment();
                 dispose();
