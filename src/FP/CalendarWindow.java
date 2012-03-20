@@ -46,6 +46,7 @@ public class CalendarWindow extends JFrame {
         allPersons = (HashMap<String, Person>) Server.Deserialize(connection.receive());
         allLocations = (HashMap<String, Location>) Server.Deserialize(connection.receive());
         today = Calendar.getInstance();
+        this.connection = connection;
 
         setLayout(new GridBagLayout());
         gridConst = new GridBagConstraints();
@@ -65,8 +66,8 @@ public class CalendarWindow extends JFrame {
 
     private void mapAppointments() {
         labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR) + " of " + today.get(Calendar.YEAR));
-         
-        for( JPanel panel : dayColumns ){
+
+        for (JPanel panel : dayColumns) {
             panel.removeAll();
         }
 
@@ -77,27 +78,26 @@ public class CalendarWindow extends JFrame {
         lastday.setTime(firstday.getTime());
         lastday.add(Calendar.DATE, 6);
 
-        if( me == null ){
+        if (me == null) {
             System.out.println("I DON'T EXIST");
-        }
-        else {
+        } else {
             System.out.println("I do exist! Yes I can " + me.getUsername());
         }
         Appointment appointment;
         // TODO: Implement getAppointments properly
         for (String appId : me.getAppointmentIds()) {
-            System.out.println("Appointment ID: " + appId );
+            System.out.println("Appointment ID: " + appId);
             appointment = me.getAppointment(appId);
 
             System.out.println("Start: " + appointment.getStart().toString());
             System.out.println("First: " + firstday.getTime().toString());
             System.out.println("Last: " + lastday.getTime().toString());
-            
+
             if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
                 firstday.setTime(appointment.getStart());
                 JLabel toBeAdded = new JLabel();
-                toBeAdded.setText( appointment.getStart().toString() + " - " +
-                appointment.getDescription() );
+                toBeAdded.setText(appointment.getStart().toString() + " - "
+                        + appointment.getDescription());
                 dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
             }
         }
@@ -167,10 +167,10 @@ public class CalendarWindow extends JFrame {
         gridConst.weightx = 4;
         gridConst.gridx = 4;
         gridConst.gridy = 2;
-    //    gridConst.fill = GridBagConstraints.HORIZONTAL;
+        //    gridConst.fill = GridBagConstraints.HORIZONTAL;
         gridConst.ipady = 40;
         bottomPanel = new JPanel(new GridBagLayout());
-        add(bottomPanel, gridConst );
+        add(bottomPanel, gridConst);
         //bridBagLayout & constraints
         GridBagConstraints gridBottom = new GridBagConstraints();
         gridBottom.gridx = 0;
@@ -208,7 +208,7 @@ public class CalendarWindow extends JFrame {
         JLabel dayLabel = new JLabel(dayNames[i]);
 
         dayLabel.setFont(daysFont);
-        
+
         System.out.println("Setting label: " + dayNames[i]);
         // Consider not defining dayColumns by name
         dayColumns[i].add(dayLabel);
@@ -239,17 +239,19 @@ public class CalendarWindow extends JFrame {
      */
     private class ButtonListener implements ActionListener {
 
+        public ButtonListener() {
+        }
+
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == addCalendarButton) {
                 /*
                  * TODO: Implement addCalendar
                  */
             } else if (ae.getSource() == newEventButton) {
-
                 AppointmentWindow appWin = new AppointmentWindow(connection, me);
                 appWin.pack();
                 appWin.setVisible(true);
-
+                appWin.setLocationRelativeTo(null);
             } else if (ae.getSource() == removeCalendarButton) {
                 /*
                  * TODO: Implement removeCalendar()
