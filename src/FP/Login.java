@@ -71,9 +71,9 @@ class Login extends JFrame implements ActionListener {
                 // Starts the actual program and destroyes the login window
                 Client.loginSuccessful();
             } catch (IOException ex) {
-                // TODO: Handle or move exception
+                ex.printStackTrace();
             } catch (ClassNotFoundException ex) {
-                // TODO: Handle or move exception
+                ex.printStackTrace();
             }
         } else {
             System.out.println("enter the valid username and password");

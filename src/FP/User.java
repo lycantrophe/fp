@@ -5,6 +5,7 @@
 package FP;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +17,7 @@ import no.ntnu.fp.net.co.Connection;
  *
  * @author lycantrophe
  */
-public class User {
+public class User implements Serializable {
 
     private static Map<String, Person> personMap = Collections.synchronizedMap(new HashMap<String, Person>());
     private Person me;

@@ -12,7 +12,7 @@ import java.util.Date;
  *
  * @author lycantrophe
  */
-public interface Appointment {
+public interface Appointment extends Serializable {
 
     public ArrayList<Attending> getInvited();
 

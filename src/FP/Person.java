@@ -27,7 +27,7 @@ public class Person implements Serializable {
     private String phoneNumber;
     private ArrayList<String> notifications;
     private static Map<String, Appointment> appointments;
-    private User user;
+//    private User user;
 
     public Person(String username, String firstname, String surname, String email, String phoneNumber) {
 
@@ -42,7 +42,7 @@ public class Person implements Serializable {
     }
 
     public void bindUser(User user) {
-        this.user = user;
+  //      this.user = user;
     }
 
     /**
@@ -76,7 +76,8 @@ public class Person implements Serializable {
 
     public void notify(String notification) {
         notifications.add(notification);
-        if (user != null) {
+        // TODO: Rewrite notification support
+    /*    if (user != null) {
             try {
                 user.sendNotification(notification);
             } catch (ConnectException ex) {
@@ -84,7 +85,7 @@ public class Person implements Serializable {
             } catch (IOException ex) {
                 Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        } */
     }
     
     public Appointment getAppointment( String id ){

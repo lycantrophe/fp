@@ -4,11 +4,13 @@
  */
 package FP;
 
+import java.io.Serializable;
+
 /**
  *
  * @author lycantrophe
  */
-public interface Location {
+public interface Location extends Serializable {
     
     public String getName();
     public int getId();

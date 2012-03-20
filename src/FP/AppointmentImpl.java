@@ -12,7 +12,7 @@ import java.util.Date;
  *
  * @author lycantrophe
  */
-public class AppointmentImpl implements Appointment, Serializable {
+public class AppointmentImpl implements Appointment {
 
     private Date start;
     private Date end;

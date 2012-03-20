@@ -46,6 +46,7 @@ public class Client {
 
     public static void loginSuccessful() throws IOException, ClassNotFoundException {
 
+        System.out.println("Login was successful! This from loginSuccessful()");
         CalendarWindow calwin = new CalendarWindow(connection);
         calwin.pack();
         calwin.setVisible(true);
