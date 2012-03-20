@@ -17,76 +17,78 @@ import no.ntnu.fp.net.co.Connection;
 /**
  * @author lycantrophe
  */
-
 public class AppointmentWindow extends JFrame {
 
     protected Connection connection;
-    protected JTextField textDescription, txtLocation;
+    protected JTextField textDescription;
     protected JSpinner spinnerStartDate, spinnerEndDate, spinnerStartTime, spinnerEndTime;
-    protected JButton buttonInvite, buttonSave, buttonCancel;
+    protected JButton buttonInvite, buttonSave, buttonCancel, buttonLocation;
     protected ArrayList<Person> invited;
-    protected ArrayList<String> participants;
     protected Map<String, Location> locations;
+    protected Map<String, Person> persons;
     protected Person me;
     protected Location location;
     protected appWinListener al;
-    
-    public AppointmentWindow(Connection connection, Person me, Map<String, Location> allLocations) {
+
+    public AppointmentWindow(Connection connection, Person me, Map<String, Person> allPersons, Map<String, Location> allLocations) {
 
         this.connection = connection;
         this.me = me;
         locations = allLocations;
+        persons = allPersons;
 
         this.invited = new ArrayList<Person>();
-        
+
         InitializeGUI();
     }
-    
-    protected void InitializeGUI()
-    {
-    	Date date = new Date();
-    	
-    	textDescription = new JTextField(16);
-    	textDescription.setToolTipText("Event description");
-        
-    	spinnerStartDate = new JSpinner(new SpinnerDateModel());
-    	spinnerStartDate.setEditor(new DateEditor(spinnerStartDate, "dd.mm.yy"));
-    	spinnerStartTime = new JSpinner(new SpinnerDateModel(date, null, null, Calendar.HOUR_OF_DAY));
-    	spinnerStartTime.setEditor(new DateEditor(spinnerStartTime, "kk:mm"));
-        
+
+    protected void InitializeGUI() {
+        Date date = new Date();
+        al = new appWinListener();
+
+        textDescription = new JTextField(16);
+        textDescription.setToolTipText("Event description");
+
+        spinnerStartDate = new JSpinner(new SpinnerDateModel());
+        spinnerStartDate.setEditor(new DateEditor(spinnerStartDate, "dd.mm.yy"));
+        spinnerStartTime = new JSpinner(new SpinnerDateModel(date, null, null, Calendar.HOUR_OF_DAY));
+        spinnerStartTime.setEditor(new DateEditor(spinnerStartTime, "kk:mm"));
+
         spinnerEndDate = new JSpinner(new SpinnerDateModel());
         spinnerEndDate.setEditor(new DateEditor(spinnerEndDate, "dd.mm.yy"));
         spinnerEndTime = new JSpinner(new SpinnerDateModel(date, null, null, Calendar.HOUR_OF_DAY));
         spinnerEndTime.setEditor(new DateEditor(spinnerEndTime, "kk:mm"));
-        
-    	txtLocation = new JTextField(16);
+
         buttonInvite = new JButton("Invite people");
         buttonInvite.addActionListener(al);
-        
+
+        buttonLocation = new JButton("Reserve room");
+        buttonLocation.addActionListener(al);
+
         buttonSave = new JButton("Save");
         buttonCancel = new JButton("Cancel");
-        
+
         JPanel des = new JPanel();
         des.add(textDescription);
-        
+
         JPanel start = new JPanel();
         start.add(spinnerStartDate);
         start.add(spinnerStartTime);
-        
+
         JPanel end = new JPanel();
         end.add(spinnerEndDate);
         end.add(spinnerEndTime);
-        
+
         JPanel loc = new JPanel();
-        loc.add(txtLocation);
-        
+        loc.add(buttonLocation);
+
         JPanel par = new JPanel();
         par.add(buttonInvite);
-        
+
         JPanel big = new JPanel();
         big.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-        
+
         c.anchor = GridBagConstraints.LINE_START;
         c.gridx = 0;
         c.gridy = 0;
@@ -99,7 +101,7 @@ public class AppointmentWindow extends JFrame {
         big.add(new JLabel("Location:"), c);
         c.gridy = 4;
         big.add(new JLabel("Participants:"), c);
-        
+
         c.gridx = 1;
         c.gridy = 0;
         big.add(des, c);
@@ -111,22 +113,25 @@ public class AppointmentWindow extends JFrame {
         big.add(loc, c);
         c.gridy = 4;
         big.add(par, c);
-        
+
         JPanel buttons = new JPanel();
         buttons.add(buttonSave);
         buttons.add(buttonCancel);
-        
+
+        buttonCancel.addActionListener(al);
+        buttonSave.addActionListener(al);
+
         JPanel container = new JPanel();
         container.setLayout(new GridBagLayout());
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.gridx = 0;
         c.gridy = 0;
         container.add(big, c);
-        
+
         c.anchor = GridBagConstraints.LAST_LINE_END;
         c.gridy = 1;
         container.add(buttons, c);
-        
+
         this.add(container);
     }
 
@@ -137,78 +142,54 @@ public class AppointmentWindow extends JFrame {
         // TODO: Get values from fields
 
         String description = textDescription.getText();
-        
+
         ArrayList<Attending> attending = new ArrayList<Attending>();
-        for( Person other : invited ){
+        for (Person other : invited) {
             attending.add(new Attending(other));
         }
         // TODO: Handle connection and sending exceptions
-        Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, participants, location);
+        Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, null, location);
         try {
             String serialized = Server.Serialize(appointment);
             connection.send("create::" + serialized);
             appointment = (Appointment) Server.Deserialize(connection.receive());
         } catch (IOException e) {
-            // Implement exception handling
+            e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            // Implement exception handling
+            e.printStackTrace();
         }
         // Add appointment to calendar
     }
 
-    protected class appWinListener implements ActionListener
-    {
+    protected class appWinListener implements ActionListener {
+
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == buttonInvite) {
-                InvitePeople inv = new InvitePeople();
-            }else if (ae.getSource() == buttonSave) {
+
+                ArrayList<Person> arr = new ArrayList<Person>();
+                for (String other : persons.keySet()) {
+                    arr.add(persons.get(other));
+                    System.out.println("Adding " + other + "to invSel");
+                }
+                SelectList invList = new SelectList(arr);
+                invList.pack();
+                invList.setVisible(true);
+                invList.setLocationRelativeTo(null);
+            } else if (ae.getSource() == buttonLocation) {
+                
+                ArrayList<Location> arr = new ArrayList<Location>();
+                for (String other : locations.keySet()) {
+                    arr.add(locations.get(other));
+                    System.out.println(locations.get(other));
+                }
+                SelectList invList = new SelectList(arr);
+                invList.pack();
+                invList.setVisible(true);
+                invList.setLocationRelativeTo(null);
+            } else if (ae.getSource() == buttonSave) {
                 sendEditAppointment();
                 dispose();
             } else if (ae.getSource() == buttonCancel) {
-                dispose();
-            }
-        }
-    }
-
-    protected class InvitePeople extends JFrame {
-
-        private JList invitees;
-        private JButton buttonDone;
-        private JButton buttonCancel;
-        private invAction al;
-
-        public InvitePeople() {
-            // availiblePersons is the arraylist of registered persons ;
-
-            ArrayList<Person> testList = new ArrayList<Person>();
-            invitees = new JList(testList.toArray());
-            JScrollPane scrollPane = new JScrollPane(invitees);
-            add(scrollPane);
-
-            al = new invAction();
-            buttonDone = new JButton();
-            buttonCancel = new JButton();
-
-            buttonDone.addActionListener(al);
-            buttonCancel.addActionListener(al);
-
-            add(buttonDone);
-            add(buttonCancel);
-        }
-
-        public ArrayList<Person> getInvited() {
-            ArrayList<Person> persons = new ArrayList<Person>();
-            persons.addAll(Arrays.asList((Person[]) invitees.getSelectedValues()));
-            return persons;
-        }
-
-        private class invAction implements ActionListener {
-
-            public void actionPerformed(ActionEvent ae) {
-                if (ae.getSource() == buttonDone) {
-                    // TODO: Implement announcment of selected values in this list
-                    // giveListToParent(getInvited);
-                }
                 dispose();
             }
         }

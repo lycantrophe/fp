@@ -4,14 +4,13 @@
  */
 package FP;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
+import java.util.Collection;
+import javax.swing.*;
 
 /**
  *
@@ -24,23 +23,26 @@ public class SelectList extends JFrame {
     private JButton buttonCancel;
     private selectAction al;
 
-    public SelectList( ArrayList<Object> arglist) {
-        // availiblePersons is the arraylist of registered persons ;
-        // TODO: Consider sending an object instance as 2nd argument  for calling a useSelected() method
+    public <T> SelectList(Collection<T> arglist) {
 
+        JPanel panel = new JPanel();
         invitees = new JList(arglist.toArray());
         JScrollPane scrollPane = new JScrollPane(invitees);
-        add(scrollPane);
+        //add(scrollPane);
+        panel.add(scrollPane);
+        invitees.setCellRenderer(new SelectListRenderer());
 
         al = new selectAction();
-        buttonDone = new JButton();
-        buttonCancel = new JButton();
+        buttonDone = new JButton("Select");
+        buttonCancel = new JButton("Cancel");
 
         buttonDone.addActionListener(al);
         buttonCancel.addActionListener(al);
 
-        add(buttonDone);
-        add(buttonCancel);
+        panel.add(buttonDone);
+        panel.add(buttonCancel);
+
+        add(panel);
     }
 
     public ArrayList<Object> getAllSelected() {
@@ -57,6 +59,33 @@ public class SelectList extends JFrame {
                 // giveListToParent(getAllSelected);
             }
             dispose();
+        }
+    }
+
+    public class SelectListRenderer extends JLabel implements ListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
+            String s = "";
+            if(o.getClass().getName().equals("FP.Person")){
+                s = ((Person) o).getFirstname() + " " + ((Person) o).getSurname() + " [" + ((Person) o).getUsername() + "]";
+            }
+            else if( o.getClass().getName().equals("FP.Room")){
+                s = ((Room) o).getType() + " - " + ((Room) o).getName();
+            }
+            setText(s);
+            
+            if (bln) {
+                setBackground(jlist.getSelectionBackground());
+                setForeground(jlist.getSelectionForeground());
+            } else {
+                setBackground(jlist.getBackground());
+                setForeground(jlist.getForeground());
+            }
+            setEnabled(jlist.isEnabled());
+            setFont(jlist.getFont());
+            setOpaque(true);
+            return this;
         }
     }
 }

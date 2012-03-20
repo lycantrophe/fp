@@ -36,8 +36,6 @@ public class CalendarWindow extends JFrame {
     private Font weekFont, daysFont;
     private JLabel labelWeek;
     private ImageIcon leftArrowIcon, rightArrowIcon;
-    private Image imgLeft, imgRight;
-    private Map<String, Calendar> thisWeek;
     private String[] dayNames = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
     private JPanel[] dayColumns = {monday, tuesday, wednesday, thursday, friday, saturday, sunday};
     private GridBagConstraints gridConst;
@@ -46,6 +44,7 @@ public class CalendarWindow extends JFrame {
     private ButtonListener buttonListener;
     private Map<String, Person> allPersons;
     private Map<String, Location> allLocations;
+    private Map<String, Appointment> allAppointments;
     private JList notifications;
     private DefaultListModel listModel;
     private JScrollPane listScrollPane;
@@ -55,8 +54,6 @@ public class CalendarWindow extends JFrame {
 
         setLayout(new GridBagLayout());
         gridConst = new GridBagConstraints();
-
-        thisWeek = new HashMap<String, Calendar>();
 
         arrowListener = new ArrowButtonListener();
         buttonListener = new ButtonListener();
@@ -74,8 +71,6 @@ public class CalendarWindow extends JFrame {
 
         setLayout(new GridBagLayout());
         gridConst = new GridBagConstraints();
-
-        thisWeek = new HashMap<String, Calendar>();
 
         arrowListener = new ArrowButtonListener();
         buttonListener = new ButtonListener();
@@ -273,7 +268,7 @@ public class CalendarWindow extends JFrame {
                  * TODO: Implement addCalendar
                  */
             } else if (ae.getSource() == newEventButton) {
-                AppointmentWindow appWin = new AppointmentWindow(connection, me, allLocations);
+                AppointmentWindow appWin = new AppointmentWindow(connection, me, allPersons, allLocations);
                 appWin.pack();
                 appWin.setVisible(true);
                 appWin.setLocationRelativeTo(null);

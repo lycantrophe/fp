@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author lycantrophe
  */
-public class Person implements Serializable {
+public class Person extends Object implements Serializable {
 
     private String username;
     private String firstname;
@@ -98,5 +98,33 @@ public class Person implements Serializable {
 
     public ArrayList<Attending> getInvited(String id) {
         return appointments.get(id).getInvited();
+    }
+
+    /**
+     * @return the firstname
+     */
+    public String getFirstname() {
+        return firstname;
+    }
+
+    /**
+     * @param firstname the firstname to set
+     */
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    /**
+     * @return the surname
+     */
+    public String getSurname() {
+        return surname;
+    }
+
+    /**
+     * @param surname the surname to set
+     */
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 }

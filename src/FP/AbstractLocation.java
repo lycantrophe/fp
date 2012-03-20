@@ -17,7 +17,7 @@ public abstract class AbstractLocation implements Location, Serializable {
 
     protected enum Roomtype {
 
-        CONFERENCE_ROOM, CAFE, AUDITORIUM
+        CONFERENCE_ROOM, KANTINA, AUDITORIUM
     }
 
     protected AbstractLocation(String name) {

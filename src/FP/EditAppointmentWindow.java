@@ -13,8 +13,8 @@ import no.ntnu.fp.net.co.Connection;
  */
 public class EditAppointmentWindow extends AppointmentWindow {
     
-    public EditAppointmentWindow( Connection connection, Person me, Appointment appointment, Map<String, Location> locations){
-        super( connection, me, locations );
+    public EditAppointmentWindow( Connection connection, Person me, Appointment appointment, Map<String, Person> persons, Map<String, Location> locations){
+        super( connection, me, persons, locations );
         spinnerStartDate.setValue(appointment.getStart());
         spinnerEndDate.setValue(appointment.getEnd());
         

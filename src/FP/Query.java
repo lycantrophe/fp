@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -129,7 +131,7 @@ public class Query {
     }
 
     public boolean authorize(String username, String password) {
-        
+
         System.out.println("Starting authorize");
 
         try {
@@ -139,7 +141,7 @@ public class Query {
             System.out.println("Executing query");
             ResultSet rs = statement.executeQuery();
             rs.first();
-            System.out.println("Got result: "+rs.getInt(1));
+            System.out.println("Got result: " + rs.getInt(1));
             return rs.getInt(1) == 1 ? true : false;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -156,9 +158,7 @@ public class Query {
                 persons.add(new Person(rs.getString("Username"), rs.getString("Firstname"), rs.getString("Surname"), rs.getString("Email"), rs.getString("Phonenumber")));
             }
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
         return persons;
     }
@@ -246,17 +246,14 @@ public class Query {
             ResultSet rs = statement.executeQuery();
             // Send in hash or arraylist to map up persons?
             while (rs.next()) {
-                if (rs.getString("Type") != null) {
-                    locations.add(new Room(rs.getInt("LocID"), rs.getString("Location.Description"), rs.getInt("Size"), AbstractLocation.Roomtype.valueOf(rs.getString("RoomType.Description"))));
-                } else {
-                    locations.add(new OtherLocation(rs.getString("Description")));
-                }
+                
+                locations.add(new Room(rs.getInt("LocID"), rs.getString("Location.Description"), rs.getInt("Size"), AbstractLocation.Roomtype.valueOf(rs.getString("RoomType.Description"))));
+                System.out.println("Adding location: " + rs.getInt("LocID"));
             }
-        } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+
         return locations;
     }
 
@@ -264,9 +261,7 @@ public class Query {
         try {
             con.close();
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
     }
 }

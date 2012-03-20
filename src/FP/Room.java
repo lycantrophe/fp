@@ -25,4 +25,8 @@ public class Room extends AbstractLocation {
     public String getName() {
         return this.name;
     }
+    
+    public String getType() {
+        return type.toString();
+    }
 }
