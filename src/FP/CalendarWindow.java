@@ -4,12 +4,16 @@
  */
 package FP;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,12 +25,15 @@ import no.ntnu.fp.net.co.Connection;
 
 public class CalendarWindow extends JFrame {
 
+    /*
+     * delete 2. constructor!
+     */
     private Connection connection;
     private Person me;
     private JPanel leftArrowPanel, rightArrowPanel, topPanel, bottomPanel,
             monday, tuesday, wednesday, thursday, friday, saturday, sunday;
     private JButton newEventButton, addCalendarButton, removeCalendarButton, leftArrowButton, rightArrowButton;
-    private Font font, daysFont;
+    private Font weekFont, daysFont;
     private JLabel labelWeek;
     private ImageIcon leftArrowIcon, rightArrowIcon;
     private Image imgLeft, imgRight;
@@ -39,6 +46,23 @@ public class CalendarWindow extends JFrame {
     private ButtonListener buttonListener;
     private Map<String, Person> allPersons;
     private Map<String, Location> allLocations;
+    private JList notifications;
+    private DefaultListModel listModel;
+    private JScrollPane listScrollPane;
+
+    public CalendarWindow() {
+        today = Calendar.getInstance();
+
+        setLayout(new GridBagLayout());
+        gridConst = new GridBagConstraints();
+
+        thisWeek = new HashMap<String, Calendar>();
+
+        arrowListener = new ArrowButtonListener();
+        buttonListener = new ButtonListener();
+
+        drawWindow();
+    }
 
     public CalendarWindow(Connection connection) throws IOException, ClassNotFoundException {
 
@@ -56,8 +80,6 @@ public class CalendarWindow extends JFrame {
         arrowListener = new ArrowButtonListener();
         buttonListener = new ButtonListener();
 
-        daysFont = new Font("", Font.PLAIN, 16);
-
         drawWindow();
         mapAppointments();
         //c.add(Calendar.DATE, -(c.get(Calendar.DAY_OF_WEEK) + i));
@@ -69,6 +91,8 @@ public class CalendarWindow extends JFrame {
 
         for (JPanel panel : dayColumns) {
             panel.removeAll();
+            panel.validate();
+            panel.repaint();
         }
 
         Calendar firstday = Calendar.getInstance();
@@ -104,119 +128,120 @@ public class CalendarWindow extends JFrame {
     }
 
     private void drawWindow() {
+        /*
+         * Top panel
+         */
+
+        weekFont = new Font("", Font.BOLD, 20);
+        labelWeek = new JLabel("12");
+        labelWeek.setFont(weekFont);
+        topPanel = new JPanel();
+        topPanel.add(labelWeek);
 
         gridConst.gridx = 1;
         gridConst.gridy = 0;
-        gridConst.fill = GridBagConstraints.HORIZONTAL;
-        gridConst.ipady = 40;
-        topPanel = new JPanel();
+
         add(topPanel, gridConst);
-        font = new Font("", Font.BOLD, 20);
-        labelWeek = new JLabel();
-        labelWeek.setFont(font);
-        topPanel.add(labelWeek);
 
         /*
-         * Arrow panels
+         * Left arrow panel
          */
+
+        leftArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/leftArrow.png");
+        leftArrowButton = new JButton(leftArrowIcon);
+        leftArrowButton.addActionListener(arrowListener);
+        leftArrowPanel = new JPanel();
+        leftArrowPanel.add(leftArrowButton);
+
         gridConst.gridx = 0;
         gridConst.gridy = 1;
-        gridConst.ipady = 300;
-        gridConst.ipadx = 10;
-        leftArrowPanel = new JPanel(new GridBagLayout());
+
         add(leftArrowPanel, gridConst);
-        //intern gridBagLayout & constraints
-        GridBagConstraints gridArrowL = new GridBagConstraints();
-        gridArrowL.anchor = GridBagConstraints.CENTER;
-        //add img as buttton
-        //imgLeft = getToolkit().createImage(getClass().getResource("leftArrow.png"));
-        //imgLeft = getToolkit().createImage("/home/lycantrophe/NetbeansProjects/fp/src/FP/leftArrow.png");
-        //leftArrowIcon = new ImageIcon(imgLeft);
-        leftArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/leftArrow.png");
-        leftArrowButton = new JButton();
-        leftArrowButton.setIcon(leftArrowIcon);
-        leftArrowButton.addActionListener(arrowListener);
-        leftArrowPanel.add(leftArrowButton, gridArrowL);
 
         /*
-         * rightArrowPanel
-         */
-        gridConst.gridx = 8;
-        gridConst.gridy = 1;
-        gridConst.ipady = 300;
-        gridConst.ipadx = 10;
-        rightArrowPanel = new JPanel(new GridBagLayout());
-        add(rightArrowPanel, gridConst);
-        //intern gridBagLayout & constraints
-        GridBagConstraints gridArrowR = new GridBagConstraints();
-        gridArrowR.anchor = GridBagConstraints.CENTER;
-        //add img as buttton
-        //imgRight = getToolkit().createImage(getClass().getResource("./rightArrow.png"));
-        //imgRight = getToolkit().createImage("/home/lycantrophe/NetbeansProjects/fp/src/FP/rightArrow.png");
-        //rightArrowIcon = new ImageIcon(imgRight);
-        rightArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/rightArrow.png");
-        rightArrowButton = new JButton();
-        rightArrowButton.setIcon(rightArrowIcon);
-        rightArrowButton.addActionListener(arrowListener);
-        rightArrowPanel.add(rightArrowButton, gridArrowR);
-
-        /*
-         * bottomPanel
+         * Day panels
          */
 
-        gridConst.weightx = 4;
-        gridConst.gridx = 4;
-        gridConst.gridy = 2;
-        //    gridConst.fill = GridBagConstraints.HORIZONTAL;
-        gridConst.ipady = 40;
-        bottomPanel = new JPanel(new GridBagLayout());
-        add(bottomPanel, gridConst);
-        //bridBagLayout & constraints
-        GridBagConstraints gridBottom = new GridBagConstraints();
-        gridBottom.gridx = 0;
-        gridBottom.weightx = 10;
-        newEventButton = new JButton("New Appointment");
-        newEventButton.addActionListener(buttonListener);
-        bottomPanel.add(newEventButton, gridBottom);
-
-        gridBottom.gridx = 1;
-        gridBottom.weightx = 10;
-        addCalendarButton = new JButton("Add Calendar");
-        addCalendarButton.addActionListener(buttonListener);
-        bottomPanel.add(addCalendarButton, gridBottom);
-
-        gridBottom.gridx = 2;
-        gridBottom.weightx = 10;
-        removeCalendarButton = new JButton("Remove Calendar");
-        removeCalendarButton.addActionListener(buttonListener);
-        bottomPanel.add(removeCalendarButton, gridBottom);
-        // Determine what week this is
+        daysFont = new Font("", Font.PLAIN, 16);
+        JLabel dayLabel;
 
         for (int i = 0; i < 7; i++) {
-            drawDayColumn(i);
+            dayLabel = new JLabel(dayNames[i]);
+            dayLabel.setFont(daysFont);
+            dayColumns[i] = new JPanel();
+            dayColumns[i].add(dayLabel);
+            dayColumns[i].setPreferredSize(new Dimension(150, 400));
+            dayColumns[i].setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+            gridConst.gridx = i + 1;
+
+            add(dayColumns[i], gridConst);
         }
-    }
 
-    private void drawDayColumn(int i) {
-        gridConst.gridx = i + 1;
+        /*
+         * Right arrow panel
+         */
+
+        rightArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/rightArrow.png");
+        rightArrowButton = new JButton(rightArrowIcon);
+        rightArrowButton.addActionListener(arrowListener);
+        rightArrowPanel = new JPanel();
+        rightArrowPanel.add(rightArrowButton);
+
+        gridConst.gridx = 8;
         gridConst.gridy = 1;
-        gridConst.ipady = 400;
-        gridConst.ipadx = 100;
-        dayColumns[i] = new JPanel();
-        add(dayColumns[i], gridConst);
-        //add label
-        JLabel dayLabel = new JLabel(dayNames[i]);
 
-        dayLabel.setFont(daysFont);
+        add(rightArrowPanel, gridConst);
 
-        System.out.println("Setting label: " + dayNames[i]);
-        // Consider not defining dayColumns by name
-        dayColumns[i].add(dayLabel);
-        dayColumns[i].setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        /*
+         * Bottom panel
+         */
+
+        listModel = new DefaultListModel();
+        notifications = new JList(listModel);
+        notifications.addMouseListener(new DoubleClickListener());
+        listScrollPane = new JScrollPane(notifications);
+        listScrollPane.setPreferredSize(new Dimension(500, 60));
+        newEventButton = new JButton("New Appointment");
+        newEventButton.addActionListener(buttonListener);
+        addCalendarButton = new JButton("Add Calendar");
+        addCalendarButton.addActionListener(buttonListener);
+        removeCalendarButton = new JButton("Remove Calendar");
+        removeCalendarButton.addActionListener(buttonListener);
+        bottomPanel = new JPanel();
+        bottomPanel.add(listScrollPane);
+        bottomPanel.add(newEventButton);
+        bottomPanel.add(addCalendarButton);
+        bottomPanel.add(removeCalendarButton);
+
+        gridConst.anchor = GridBagConstraints.PAGE_START;
+        gridConst.gridwidth = 7;
+        gridConst.gridx = 1;
+        gridConst.gridy = 2;
+
+        add(bottomPanel, gridConst);
     }
 
     private boolean isWithinRange(Date date, Date start, Date end) {
         return !(date.before(start) || date.after(end));
+    }
+
+    class DoubleClickListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                int index = notifications.locationToIndex(e.getPoint());
+                System.out.println("Double clicked on Item " + index);
+                Object item = listModel.getElementAt(index);
+                System.out.println(item.toString());
+
+                NotificationWindow notificationWin = new NotificationWindow(item.toString());
+                notificationWin.setLocationRelativeTo(null);
+                notificationWin.pack();
+                notificationWin.setVisible(true);
+            }
+        }
     }
 
     /*
