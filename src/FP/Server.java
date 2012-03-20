@@ -10,6 +10,8 @@ import java.util.Map;
 import no.ntnu.fp.net.admin.Log;
 import no.ntnu.fp.net.co.Connection;
 import no.ntnu.fp.net.co.ConnectionImpl;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 /**
  *
@@ -19,6 +21,7 @@ public class Server {
 
     public static Map<String, Person> persons;
     public static Map<String, Location> locations;
+
     /**
      * @param args the command line arguments
      */
@@ -28,9 +31,9 @@ public class Server {
         // Create log
         Log log = new Log();
         log.setLogName("Server-side application");
-        
+
         buildAllObjects();
-        
+
         // server connection instance, listen on port 5555
         Connection server = new ConnectionImpl(5555);
         // each new connection lives in its own instance
@@ -42,7 +45,7 @@ public class Server {
             try {
                 conn = server.accept();
 
-                Thread thread = new ServerThread( conn );
+                Thread thread = new ServerThread(conn);
                 thread.run();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -73,17 +76,21 @@ public class Server {
     }
 
     public static String Serialize(Object object) throws IOException {
-        
+
+        BASE64Encoder encode = new BASE64Encoder();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(baos);
         out.writeObject(object);
-        return baos.toString();
+        out.flush();
+        return encode.encode(baos.toByteArray());
     }
 
     public static Object Deserialize(String input) throws IOException, ClassNotFoundException {
 
-        byte[] bytes = input.getBytes();
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        BASE64Decoder decode = new BASE64Decoder();;
+        
+        ByteArrayInputStream bis = new ByteArrayInputStream(decode.decodeBuffer(input));
+        
         ObjectInputStream ois = new ObjectInputStream(bis);
         return ois.readObject();
     }
