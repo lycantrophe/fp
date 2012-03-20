@@ -196,7 +196,7 @@ public class ConnectionImpl extends AbstractConnection {
          * Should consider a better behaviour
          */
         if (ack == null) {
-            this.state = State.LISTEN;
+            this.state = State.CLOSED;
             return accept();
         } else if (ack != null) {
             this.state = State.ESTABLISHED;
