@@ -41,9 +41,9 @@ public class NotificationWindow extends JFrame{
 		c.anchor = GridBagConstraints.LAST_LINE_END;
 		c.insets = new Insets(10, 15, 5, 15);
 		
-		accept = new JButton("Godta");
+		accept = new JButton("Accept");
 		accept.addActionListener(new AcceptButtonAction());
-		decline = new JButton("Avslå");
+		decline = new JButton("Decline");
 		decline.addActionListener(new DeclineButtonAction());
 		JPanel pnl = new JPanel();
 		pnl.add(accept);
