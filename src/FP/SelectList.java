@@ -7,6 +7,7 @@ package FP;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -44,7 +45,7 @@ public class SelectList extends JFrame {
 
     public ArrayList<Object> getAllSelected() {
         ArrayList<Object> list = new ArrayList<Object>();
-        list.addAll(invitees.getSelectedValuesList());
+        list.addAll(Arrays.asList(invitees.getSelectedValues()));
         return list;
     }
 
