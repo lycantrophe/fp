@@ -138,6 +138,7 @@ public class Query {
             statement.setString(2, password);
             System.out.println("Executing query");
             ResultSet rs = statement.executeQuery();
+            rs.first();
             System.out.println("Got result: "+rs.getInt(1));
             return rs.getInt(1) == 1 ? true : false;
         } catch (SQLException e) {

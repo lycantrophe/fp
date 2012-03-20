@@ -12,10 +12,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import no.ntnu.fp.net.co.Connection;
@@ -38,10 +35,14 @@ public class CalendarWindow extends JFrame {
     private Calendar today;
     private ArrowButtonListener arrowListener;
     private ButtonListener buttonListener;
+    private Map<String, Person> allPersons;
+    private Map<String, Location> allLocations;
 
     public CalendarWindow(Connection connection) throws IOException, ClassNotFoundException {
 
         me = (Person) Server.Deserialize(connection.receive());
+        allPersons = (HashMap<String, Person>) Server.Deserialize(connection.receive());
+        allLocations = (HashMap<String, Location>) Server.Deserialize(connection.receive());
         today = Calendar.getInstance();
 
         setLayout(new GridBagLayout());
@@ -64,8 +65,13 @@ public class CalendarWindow extends JFrame {
         labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR));
 
         /*
-         * Remove entries belonging to wrong week
+         * TODO: Remove entries belonging to wrong week
          */
+
+        Calendar firstday = today;
+        firstday.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
+        Calendar lastday = firstday;
+        lastday.add(Calendar.DATE, 6);
 
         Appointment appointment;
         for (String appId : me.getAppointmentIds()) {
@@ -73,10 +79,7 @@ public class CalendarWindow extends JFrame {
              * Map appointments to the proper days
              */
             appointment = me.getAppointment(appId);
-            Calendar firstday = today;
-            firstday.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
-            Calendar lastday = firstday;
-            lastday.add(Calendar.DATE, 6);
+
             if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
                 firstday.setTime(appointment.getStart());
                 // TODO: New JLabel() should be approperiate element
@@ -222,11 +225,11 @@ public class CalendarWindow extends JFrame {
                  * TODO: Implement addCalendar
                  */
             } else if (ae.getSource() == newEventButton) {
-                
+
                 AppointmentWindow appWin = new AppointmentWindow(connection, me);
                 appWin.pack();
                 appWin.setVisible(true);
-                
+
             } else if (ae.getSource() == removeCalendarButton) {
                 /*
                  * TODO: Implement removeCalendar()

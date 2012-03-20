@@ -63,6 +63,7 @@ class Login extends JFrame implements ActionListener {
 
             success = connection.receive();
         } catch (IOException e) {
+            e.printStackTrace();
         }
 
         if (success.equals("Login successful")) {

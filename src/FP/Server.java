@@ -28,14 +28,15 @@ public class Server {
         // Create log
         Log log = new Log();
         log.setLogName("Server-side application");
-
+        
+        buildAllObjects();
+        
         // server connection instance, listen on port 5555
         Connection server = new ConnectionImpl(5555);
         // each new connection lives in its own instance
         Connection conn;
-        // TODO: Thread at this point?
+        // TODO: Thread at   this point?
 
-        buildAllObjects();
 
         while (true) {
             try {

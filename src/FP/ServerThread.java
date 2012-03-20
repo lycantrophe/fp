@@ -7,6 +7,9 @@ package FP;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import no.ntnu.fp.net.admin.Log;
 import no.ntnu.fp.net.co.Connection;
 
@@ -15,76 +18,112 @@ import no.ntnu.fp.net.co.Connection;
  * @author lycantrophe
  */
 public class ServerThread extends Thread {
-    
+
     private Connection connection;
-    
-    public ServerThread( Connection connection ){
+    private Map<String, Person> persons;
+    private Map<String, Location> locations;
+
+    public ServerThread(Connection connection, Map<String, Person> persons, Map<String, Location> locations) {
         this.connection = connection;
     }
-    
+
     // handle exceptions
-    public void run( ) throws ConnectException, IOException {
+    public void run() {
         Query query = new Query();
-            try {
-                String uname = connection.receive();
-                String pw = connection.receive();
-                if (query.authorize(uname, pw)) {
-                    query.close();
-                    connection.send("Login successful");
-                    User user = new User(uname);
-                    user.bind(connection);
-                    // Sends "me" and (hopefully) all structures connected to "me"
-                    connection.send(Server.Serialize(user.initialSend()));
-                    String cmd;
-                    while ((cmd = connection.receive()) != null) {
-                        // Exit if receives end call
-                        if (cmd.equalsIgnoreCase("exit")) {
-                            break;
-                        }
-                        // Input should be in the form: command :: arg1 :: arg2 :: arg3 
-                        String[] opts = cmd.split("::");
-                        if (opts[0].equalsIgnoreCase("delete")) {
+        // TODO: Loop around sending user/pass for several login attempts
+        try {
+            String uname;
+            uname = connection.receive();
+            String pw = connection.receive();
 
-                            if (user.deleteAppointment(opts[1])) {
-                                // takes: delete :: [id]
-                                // TODO: Validate input
-                                connection.send("delete ACK");
-                            } else {
-                                connection.send("delete FAIL");
-                            }
+            if (query.authorize(uname, pw)) {
+                query.close();
+                connection.send("Login successful");
+                User user = new User(uname);
+                user.bind(connection);
+                // Sends "me" and (hopefully) all structures connected to "me"
+                connection.send(Server.Serialize(user.initialSend()));
 
-                        } else if (opts[0].equalsIgnoreCase("decline")) {
+                // Sends other needed data structures
+                connection.send(Server.Serialize(persons));
+                connection.send(Server.Serialize(locations));
 
-                            if (user.declineAppointment(opts[1])) {
-
-                                // takes: decline :: [id]
-                                connection.send("decline ACK");
-                            } else {
-                                connection.send("decline FAIL");
-                            }
-                        } else if (opts[0].equalsIgnoreCase("edit")) {
-                            // parse json
-                            // TODO: validate input
-                            //user.editAppointment(null, null, null, null, cmd, null, null, null); )
-                        }
-                        /*
-                         * do things
-                         */
+                String cmd;
+                while ((cmd = connection.receive()) != null) {
+                    // Exit if receives end call
+                    if (cmd.equalsIgnoreCase("exit")) {
+                        break;
                     }
 
-                    // Send notifications
+                    if (cmd.equalsIgnoreCase("delete")) {
+                        
+                        cmd = connection.receive();
+                        
+                        if (user.deleteAppointment(cmd)) {
+                            // takes: delete :: [id]
+                            // TODO: Validate input
+                            connection.send("delete ACK");
+                        } else {
+                            connection.send("delete FAIL");
+                        }
 
-                } else {
-                    // TODO: Wrong login handling.
-                    connection.send("Try again!");
+                    } else if (cmd.equalsIgnoreCase("decline")) {
+
+                        String id = connection.receive();
+                        if (user.declineAppointment(id)) {
+
+                            // takes: decline :: [id]
+                            connection.send("decline ACK");
+                        } else {
+                            connection.send("decline FAIL");
+                        }
+
+
+                    } else if (cmd.equalsIgnoreCase("edit")) {
+                        cmd = connection.receive();
+                        Appointment newAppointment = null;
+                        try {
+                            newAppointment = (Appointment) Server.Deserialize(connection.receive());
+                        } catch (ClassNotFoundException ex) {
+                            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+                            ex.printStackTrace();
+                        }
+                        if (newAppointment != null) {
+                            user.editAppointment(cmd, newAppointment);
+                        } else {
+                            throw new AssertionError("Could not get proper object from client");
+                        }
+                        
+                    }
+                    /*
+                     * do things
+                     */
                 }
 
+                // Send notifications
 
-            } catch (EOFException e) {
-                query.close();
-                Log.writeToLog("Got close request (EOFException), closing.",
-                        "TestServer");
-                connection.close();
+            } else {
+                // TODO: Wrong login handling.
+                connection.send("Try again!");
             }
+
+
+        } catch (EOFException e) {
+            query.close();
+            Log.writeToLog("Got close request (EOFException), closing.",
+                    "TestServer");
+            try {
+                connection.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+            }
+        } catch (ConnectException e) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
+            e.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        }
     }
 }
