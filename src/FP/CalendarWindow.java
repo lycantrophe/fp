@@ -22,6 +22,9 @@ import no.ntnu.fp.net.co.Connection;
 
 public class CalendarWindow extends JFrame {
 
+	/*
+	 * Kamil: check
+	 */
     private Connection connection;
     private Person me;
     private JPanel leftArrowPanel, rightArrowPanel, topPanel, bottomPanel,
