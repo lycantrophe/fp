@@ -21,12 +21,13 @@ public class Query {
 
     public Query() {
         try {
-            con = DriverManager.getConnection(
-                    "jdbc:default:connection");
+            String connection = "jdbc:mysql://mysql.stud.ntnu.no/adamczyk_fp";
+            String user = "adamczyk_fpuser";
+            String password = "fppassword";
+            con = DriverManager.getConnection(connection, user, password);
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            System.out.println("Cannot connect to MYSQL database");
+            e.printStackTrace();
         }
     }
 
@@ -128,17 +129,19 @@ public class Query {
     }
 
     public boolean authorize(String username, String password) {
+        
+        System.out.println("Starting authorize");
 
         try {
             statement = con.prepareStatement("SELECT COUNT(*) AS Valid FROM Users WHERE Username = ? AND Password = ?");
             statement.setString(1, username);
             statement.setString(2, password);
+            System.out.println("Executing query");
             ResultSet rs = statement.executeQuery();
-            return rs.getInt("Valid") == 1 ? true : false;
+            System.out.println("Got result: "+rs.getInt(1));
+            return rs.getInt(1) == 1 ? true : false;
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
         return false;
     }
