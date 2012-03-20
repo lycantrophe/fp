@@ -38,7 +38,7 @@ public class Server {
         Connection server = new ConnectionImpl(5555);
         // each new connection lives in its own instance
         Connection conn;
-        // TODO: Thread at   this point?
+        // TODO: Thread at this point?
 
 
         while (true) {

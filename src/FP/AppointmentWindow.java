@@ -8,10 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -30,28 +27,18 @@ public class AppointmentWindow extends JFrame {
     protected JComboBox comboLocations;
     protected ArrayList<Person> invited;
     protected ArrayList<String> participants;
-    protected ArrayList<Location> locations;
+    protected Map<String, Location> locations;
     protected Person me;
     protected Location location;
     protected appWinListener al;
 
-    public AppointmentWindow(Connection connection, Person me) {
-
+    public AppointmentWindow(Connection connection, Person me, Map<String, Location> allLocations) {
+        
         this.connection = connection;
         Date date = new Date();
         al = new appWinListener();
         this.me = me;
-        participants = new ArrayList<String>();
-        try {
-            connection.send("getLocations");
-            locations = (ArrayList<Location>) Server.Deserialize(connection.receive());
-        } catch (ConnectException ex) {
-            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(AppointmentWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        locations = allLocations;
 
         this.textDescription = new JTextField();
 
@@ -69,7 +56,7 @@ public class AppointmentWindow extends JFrame {
         this.buttonCancel = new JButton();
 
         invited = new ArrayList<Person>();
-        this.comboLocations = new JComboBox((Location[]) locations.toArray());
+        //this.comboLocations = new JComboBox((Location[]) locations.toArray());
 
         textDescription.setToolTipText("Event description");
 
@@ -85,7 +72,7 @@ public class AppointmentWindow extends JFrame {
 
         buttonNewLocation.setText("Add location");
         buttonNewLocation.addActionListener(al);
-        comboLocations.addActionListener(al);
+//        comboLocations.addActionListener(al);
 
         buttonAddParticipant.setText("Add external participants");
         buttonAddParticipant.addActionListener(al);

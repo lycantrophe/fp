@@ -248,7 +248,7 @@ public class CalendarWindow extends JFrame {
                  * TODO: Implement addCalendar
                  */
             } else if (ae.getSource() == newEventButton) {
-                AppointmentWindow appWin = new AppointmentWindow(connection, me);
+                AppointmentWindow appWin = new AppointmentWindow(connection, me, allLocations);
                 appWin.pack();
                 appWin.setVisible(true);
                 appWin.setLocationRelativeTo(null);

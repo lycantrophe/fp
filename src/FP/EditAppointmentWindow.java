@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.util.Map;
 import no.ntnu.fp.net.co.Connection;
 
 /**
@@ -12,14 +13,14 @@ import no.ntnu.fp.net.co.Connection;
  */
 public class EditAppointmentWindow extends AppointmentWindow {
     
-    public EditAppointmentWindow( Connection connection, Person me, Appointment appointment ){
-        super( connection, me );
+    public EditAppointmentWindow( Connection connection, Person me, Appointment appointment, Map<String, Location> locations){
+        super( connection, me, locations );
         spinnerStartDate.setValue(appointment.getStart());
         spinnerEndDate.setValue(appointment.getEnd());
         
         textDescription.setText(appointment.getDescription());
         invited = appointment.getInvitedPersons();
-        participants = appointment.getParticipants();
+        //participants = appointment.getParticipants();
         
         // TODO: Add support for changing owner
     }

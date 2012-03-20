@@ -41,6 +41,7 @@ public class Client {
         }
         login = new Login(connection);
         login.pack();
+        login.setLocationRelativeTo(null);
         login.setVisible(true);
     }
 
@@ -50,6 +51,7 @@ public class Client {
         CalendarWindow calwin = new CalendarWindow(connection);
         calwin.pack();
         calwin.setVisible(true);
+        calwin.setLocationRelativeTo(null);
         login.dispose();
     }
 }
