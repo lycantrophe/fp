@@ -168,22 +168,22 @@ public class Query {
         HashMap<String, ArrayList<Attending>> appointments = new HashMap<String, ArrayList<Attending>>();
         try {
             // Get the relations
-            statement = con.prepareStatement("SELECT * FROM appointmentRel");
+            statement = con.prepareStatement("SELECT * FROM AppointmentRel");
             ResultSet rs = statement.executeQuery();
             // Builds the map of all the appointment participants
+            System.out.println("About to iterate over resultSet");
             while (rs.next()) {
                 String key = rs.getString("ID");
+                System.out.println("KEY: " + key);
                 if (!appointments.containsKey(key)) {
                     appointments.put(key, new ArrayList<Attending>());
                 }
                 // Adds the newly constructed Attending tuple to the appointments list
-                appointments.get(key).add(new Attending(persons.get(key), Attending.Status.valueOf(rs.getString("Status"))));
+                appointments.get(key).add(new Attending(persons.get(rs.getString("Person")), Attending.Status.valueOf(rs.getString("Status"))));
 
             }
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
         // Starts the work
         try {
@@ -192,14 +192,15 @@ public class Query {
 
             while (rs.next()) {
                 // Builds the participant arraylist
-                ArrayList<String> participants = new ArrayList<String>(Arrays.asList(rs.getString("Participants").split(",")));
+                //ArrayList<String> participants = new ArrayList<String>(Arrays.asList(rs.getString("Participants").split(",")));
+                ArrayList<String> participants = new ArrayList<String>();
 
                 String id = rs.getString("ID");
                 Person owner = persons.get(rs.getString("Owner"));
 
                 // Constructs the appointment
-                Appointment appointment = new AppointmentImpl(owner, rs.getTime("StartDate"), rs.getTime("EndDate"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("LocationID")));
-
+                Appointment appointment = new AppointmentImpl(owner, rs.getTimestamp("StartDate"), rs.getTimestamp("EndDate"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("LocationID")));
+                appointment.setId(id);
                 // Adds this appointment to everyone invited
                 for (Attending other : appointments.get(id)) {
                     other.getPerson().addAppointment(appointment);
@@ -207,9 +208,7 @@ public class Query {
             }
 
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
     }
 

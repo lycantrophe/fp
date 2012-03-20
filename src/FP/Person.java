@@ -26,7 +26,7 @@ public class Person implements Serializable {
     private String email;
     private String phoneNumber;
     private ArrayList<String> notifications;
-    private static Map<String, Appointment> appointments;
+    private Map<String, Appointment> appointments;
 //    private User user;
 
     public Person(String username, String firstname, String surname, String email, String phoneNumber) {
@@ -42,7 +42,7 @@ public class Person implements Serializable {
     }
 
     public void bindUser(User user) {
-  //      this.user = user;
+        //      this.user = user;
     }
 
     /**
@@ -52,6 +52,7 @@ public class Person implements Serializable {
      * @param appointment Appointment to add
      */
     public void addAppointment(Appointment appointment) {
+        System.out.println("Appointment being added! " + appointment.getId());
         appointments.put(appointment.getId(), appointment);
     }
 
@@ -63,7 +64,7 @@ public class Person implements Serializable {
     public void deleteAppointment(String id) {
         appointments.remove(id);
     }
-    
+
     public String getUsername() {
         return username;
     }
@@ -77,21 +78,20 @@ public class Person implements Serializable {
     public void notify(String notification) {
         notifications.add(notification);
         // TODO: Rewrite notification support
-    /*    if (user != null) {
-            try {
-                user.sendNotification(notification);
-            } catch (ConnectException ex) {
-                Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } */
+    /*
+         * if (user != null) { try { user.sendNotification(notification); }
+         * catch (ConnectException ex) {
+         * Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+         * } catch (IOException ex) {
+         * Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
+         * } }
+         */
     }
-    
-    public Appointment getAppointment( String id ){
+
+    public Appointment getAppointment(String id) {
         return appointments.get(id);
     }
-    
+
     public Set<String> getAppointmentIds() {
         return appointments.keySet();
     }

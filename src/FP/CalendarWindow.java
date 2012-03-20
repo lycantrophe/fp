@@ -4,7 +4,6 @@
  */
 package FP;
 
-import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,7 +11,10 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import no.ntnu.fp.net.co.Connection;
@@ -62,28 +64,41 @@ public class CalendarWindow extends JFrame {
     }
 
     private void mapAppointments() {
-        labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR));
+        labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR) + " of " + today.get(Calendar.YEAR));
+         
+        for( JPanel panel : dayColumns ){
+            panel.removeAll();
+        }
 
-        /*
-         * TODO: Remove entries belonging to wrong week
-         */
-
-        Calendar firstday = today;
+        Calendar firstday = Calendar.getInstance();
+        firstday.setTime(today.getTime());
         firstday.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
-        Calendar lastday = firstday;
+        Calendar lastday = Calendar.getInstance();
+        lastday.setTime(firstday.getTime());
         lastday.add(Calendar.DATE, 6);
 
+        if( me == null ){
+            System.out.println("I DON'T EXIST");
+        }
+        else {
+            System.out.println("I do exist! Yes I can " + me.getUsername());
+        }
         Appointment appointment;
+        // TODO: Implement getAppointments properly
         for (String appId : me.getAppointmentIds()) {
-            /*
-             * Map appointments to the proper days
-             */
+            System.out.println("Appointment ID: " + appId );
             appointment = me.getAppointment(appId);
 
+            System.out.println("Start: " + appointment.getStart().toString());
+            System.out.println("First: " + firstday.getTime().toString());
+            System.out.println("Last: " + lastday.getTime().toString());
+            
             if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
                 firstday.setTime(appointment.getStart());
-                // TODO: New JLabel() should be approperiate element
-                dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(new JLabel());
+                JLabel toBeAdded = new JLabel();
+                toBeAdded.setText( appointment.getStart().toString() + " - " +
+                appointment.getDescription() );
+                dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
             }
         }
     }
@@ -114,8 +129,10 @@ public class CalendarWindow extends JFrame {
         GridBagConstraints gridArrowL = new GridBagConstraints();
         gridArrowL.anchor = GridBagConstraints.CENTER;
         //add img as buttton
-        imgLeft = getToolkit().createImage(getClass().getResource("leftArrow.png"));
-        leftArrowIcon = new ImageIcon(imgLeft);
+        //imgLeft = getToolkit().createImage(getClass().getResource("leftArrow.png"));
+        //imgLeft = getToolkit().createImage("/home/lycantrophe/NetbeansProjects/fp/src/FP/leftArrow.png");
+        //leftArrowIcon = new ImageIcon(imgLeft);
+        leftArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/leftArrow.png");
         leftArrowButton = new JButton();
         leftArrowButton.setIcon(leftArrowIcon);
         leftArrowButton.addActionListener(arrowListener);
@@ -134,8 +151,10 @@ public class CalendarWindow extends JFrame {
         GridBagConstraints gridArrowR = new GridBagConstraints();
         gridArrowR.anchor = GridBagConstraints.CENTER;
         //add img as buttton
-        imgRight = getToolkit().createImage(getClass().getResource("rightArrow.png"));
-        rightArrowIcon = new ImageIcon(imgRight);
+        //imgRight = getToolkit().createImage(getClass().getResource("./rightArrow.png"));
+        //imgRight = getToolkit().createImage("/home/lycantrophe/NetbeansProjects/fp/src/FP/rightArrow.png");
+        //rightArrowIcon = new ImageIcon(imgRight);
+        rightArrowIcon = new ImageIcon("/home/lycantrophe/NetBeansProjects/fp/src/FP/rightArrow.png");
         rightArrowButton = new JButton();
         rightArrowButton.setIcon(rightArrowIcon);
         rightArrowButton.addActionListener(arrowListener);
@@ -145,13 +164,13 @@ public class CalendarWindow extends JFrame {
          * bottomPanel
          */
 
-        gridConst.gridwidth = 4;
+        gridConst.weightx = 4;
         gridConst.gridx = 4;
         gridConst.gridy = 2;
-        gridConst.fill = GridBagConstraints.HORIZONTAL;
+    //    gridConst.fill = GridBagConstraints.HORIZONTAL;
         gridConst.ipady = 40;
         bottomPanel = new JPanel(new GridBagLayout());
-        add(bottomPanel, gridConst);
+        add(bottomPanel, gridConst );
         //bridBagLayout & constraints
         GridBagConstraints gridBottom = new GridBagConstraints();
         gridBottom.gridx = 0;
@@ -181,15 +200,16 @@ public class CalendarWindow extends JFrame {
     private void drawDayColumn(int i) {
         gridConst.gridx = i + 1;
         gridConst.gridy = 1;
-        // gridConst.ipady = 400;
-        //gridConst.ipadx = 10;
+        gridConst.ipady = 400;
+        gridConst.ipadx = 100;
         dayColumns[i] = new JPanel();
         add(dayColumns[i], gridConst);
         //add label
         JLabel dayLabel = new JLabel(dayNames[i]);
 
         dayLabel.setFont(daysFont);
-
+        
+        System.out.println("Setting label: " + dayNames[i]);
         // Consider not defining dayColumns by name
         dayColumns[i].add(dayLabel);
         dayColumns[i].setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));

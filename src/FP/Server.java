@@ -55,6 +55,7 @@ public class Server {
 
     private static void buildAllObjects() {
 
+        System.out.println("Building objects!");
         Query query = new Query();
         persons = new HashMap<String, Person>();
         // Get persons
