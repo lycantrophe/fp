@@ -35,7 +35,6 @@ public class ServerThread extends Thread {
             String pw = connection.receive();
 
             if (query.authorize(uname, pw)) {
-                query.close();
                 connection.send("Login successful");
                 User user = new User(uname);
                 user.bind(connection);
@@ -92,6 +91,14 @@ public class ServerThread extends Thread {
                             throw new AssertionError("Could not get proper object from client");
                         }
                         
+                    }
+                    else if( cmd.equalsIgnoreCase("create")) {
+                        System.out.println("Starting creation routine");
+                        try {
+                            query.createAppointment((Appointment)Server.Deserialize(connection.receive()));
+                        } catch (ClassNotFoundException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     /*
                      * do things

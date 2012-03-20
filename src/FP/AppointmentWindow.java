@@ -21,7 +21,7 @@ public class AppointmentWindow extends JFrame {
 
     protected Connection connection;
     protected JTextField textDescription;
-    protected JSpinner spinnerStartDate, spinnerEndDate, spinnerStartTime, spinnerEndTime;
+    protected JSpinner spinnerStartDate, spinnerEndDate;
     protected JButton buttonInvite, buttonSave, buttonCancel, buttonLocation;
     protected ArrayList<Person> invited;
     protected Map<String, Location> locations;
@@ -44,20 +44,16 @@ public class AppointmentWindow extends JFrame {
 
     protected void InitializeGUI() {
         Date date = new Date();
-        al = new appWinListener();
+        al = new appWinListener(this);
 
         textDescription = new JTextField(16);
         textDescription.setToolTipText("Event description");
 
         spinnerStartDate = new JSpinner(new SpinnerDateModel());
-        spinnerStartDate.setEditor(new DateEditor(spinnerStartDate, "dd.mm.yy"));
-        spinnerStartTime = new JSpinner(new SpinnerDateModel(date, null, null, Calendar.HOUR_OF_DAY));
-        spinnerStartTime.setEditor(new DateEditor(spinnerStartTime, "kk:mm"));
+        spinnerStartDate.setEditor(new DateEditor(spinnerStartDate));
 
         spinnerEndDate = new JSpinner(new SpinnerDateModel());
-        spinnerEndDate.setEditor(new DateEditor(spinnerEndDate, "dd.mm.yy"));
-        spinnerEndTime = new JSpinner(new SpinnerDateModel(date, null, null, Calendar.HOUR_OF_DAY));
-        spinnerEndTime.setEditor(new DateEditor(spinnerEndTime, "kk:mm"));
+        spinnerEndDate.setEditor(new DateEditor(spinnerEndDate));
 
         buttonInvite = new JButton("Invite people");
         buttonInvite.addActionListener(al);
@@ -73,11 +69,9 @@ public class AppointmentWindow extends JFrame {
 
         JPanel start = new JPanel();
         start.add(spinnerStartDate);
-        start.add(spinnerStartTime);
 
         JPanel end = new JPanel();
         end.add(spinnerEndDate);
-        end.add(spinnerEndTime);
 
         JPanel loc = new JPanel();
         loc.add(buttonLocation);
@@ -151,7 +145,10 @@ public class AppointmentWindow extends JFrame {
         Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, null, location);
         try {
             String serialized = Server.Serialize(appointment);
-            connection.send("create::" + serialized);
+            System.out.println("Starting create");
+            connection.send("create");
+            System.out.println("Sending object for creation");
+            connection.send(serialized);
             appointment = (Appointment) Server.Deserialize(connection.receive());
         } catch (IOException e) {
             e.printStackTrace();
@@ -161,8 +158,21 @@ public class AppointmentWindow extends JFrame {
         // Add appointment to calendar
     }
 
+    public void getSelectedValues(Location location ) {
+        this.location = location;
+    }
+
+    public void getSelectedValues(ArrayList<Person> invited) {
+        this.invited = invited;
+    }
+
     protected class appWinListener implements ActionListener {
 
+        private AppointmentWindow par;
+        public appWinListener( AppointmentWindow par) {
+            this.par = par;
+        }
+        
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == buttonInvite) {
 
@@ -171,18 +181,18 @@ public class AppointmentWindow extends JFrame {
                     arr.add(persons.get(other));
                     System.out.println("Adding " + other + "to invSel");
                 }
-                SelectList invList = new SelectList(arr);
+                SelectList invList = new SelectList(arr, par);
                 invList.pack();
                 invList.setVisible(true);
                 invList.setLocationRelativeTo(null);
             } else if (ae.getSource() == buttonLocation) {
-                
+
                 ArrayList<Location> arr = new ArrayList<Location>();
                 for (String other : locations.keySet()) {
                     arr.add(locations.get(other));
                     System.out.println(locations.get(other));
                 }
-                SelectList invList = new SelectList(arr);
+                SelectList invList = new SelectList(arr, par);
                 invList.pack();
                 invList.setVisible(true);
                 invList.setLocationRelativeTo(null);

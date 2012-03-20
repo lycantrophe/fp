@@ -22,9 +22,11 @@ public class SelectList extends JFrame {
     private JButton buttonDone;
     private JButton buttonCancel;
     private selectAction al;
+    private AppointmentWindow parentWin;
 
-    public <T> SelectList(Collection<T> arglist) {
+    public <T> SelectList(Collection<T> arglist, AppointmentWindow parentWin) {
 
+        this.parentWin = parentWin;
         JPanel panel = new JPanel();
         invitees = new JList(arglist.toArray());
         JScrollPane scrollPane = new JScrollPane(invitees);
@@ -54,9 +56,19 @@ public class SelectList extends JFrame {
     private class selectAction implements ActionListener {
 
         public void actionPerformed(ActionEvent ae) {
-            if (ae.getSource() == buttonDone) {
-                // TODO: Implement announcment of selected values in this list
-                // giveListToParent(getAllSelected);
+            ArrayList<Object> sel = getAllSelected();
+            if (ae.getSource() == buttonDone && !sel.isEmpty()) {
+                //TODO: Implement announcment of selected values in this list
+
+                if (sel.get(0).getClass().getName().equals("FP.Person")) {
+                    ArrayList<Person> p = new ArrayList<Person>();
+                    for( Object o : sel ){
+                        p.add((Person) o);
+                    }
+                    parentWin.getSelectedValues(p);
+                } else {
+                    parentWin.getSelectedValues((Location) (sel.get(0)));
+                }
             }
             dispose();
         }
@@ -67,14 +79,13 @@ public class SelectList extends JFrame {
         @Override
         public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
             String s = "";
-            if(o.getClass().getName().equals("FP.Person")){
+            if (o.getClass().getName().equals("FP.Person")) {
                 s = ((Person) o).getFirstname() + " " + ((Person) o).getSurname() + " [" + ((Person) o).getUsername() + "]";
-            }
-            else if( o.getClass().getName().equals("FP.Room")){
+            } else if (o.getClass().getName().equals("FP.Room")) {
                 s = ((Room) o).getType() + " - " + ((Room) o).getName();
             }
             setText(s);
-            
+
             if (bln) {
                 setBackground(jlist.getSelectionBackground());
                 setForeground(jlist.getSelectionForeground());

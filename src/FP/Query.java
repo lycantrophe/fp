@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 public class Query {
 
     private Connection con;
-    PreparedStatement statement;
 
     public Query() {
         try {
@@ -35,6 +34,7 @@ public class Query {
 
     public void updateAppointment(Appointment appointment, ArrayList<Person> newParticipants, ArrayList<Person> oldParticipants) {
 
+        PreparedStatement statement;
         try {
             statement = con.prepareStatement("UPDATE appointment SET start=?, end=?, owner=?, description=?, setLocation=?");
             statement.setDate(1, new java.sql.Date(appointment.getStart().getTime()));
@@ -67,6 +67,7 @@ public class Query {
     }
 
     public void deleteAppointment(Appointment appointment) {
+        PreparedStatement statement;
         try {
             // This should remove all entries in AppointmentRel
             statement = con.prepareStatement("DELETE FROM Appointment WHERE ID = ?");
@@ -90,6 +91,7 @@ public class Query {
     }
 
     public void updateStatus(String status, Appointment appointment, Person person) {
+        PreparedStatement statement;
 
         String query;
         if (person != null) {
@@ -114,8 +116,9 @@ public class Query {
 
     public void addAppointment(Appointment appointment, ArrayList<Person> persons) {
 
+        PreparedStatement statement;
         try {
-            con.prepareStatement("INSERT INTO AppointmentRel (Username, Appointmentid, Status ) VALUES ( ?, ?, ? )");
+            statement = con.prepareStatement("INSERT INTO AppointmentRel (Username, Appointmentid, Status ) VALUES ( ?, ?, ? )");
 
             for (Person other : persons) {
                 statement.setString(1, other.getUsername());
@@ -124,16 +127,14 @@ public class Query {
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
-            /*
-             * handle exception
-             */
+            e.printStackTrace();
         }
     }
 
     public boolean authorize(String username, String password) {
 
         System.out.println("Starting authorize");
-
+        PreparedStatement statement;
         try {
             statement = con.prepareStatement("SELECT COUNT(*) AS Valid FROM Users WHERE Username = ? AND Password = ?");
             statement.setString(1, username);
@@ -150,6 +151,7 @@ public class Query {
     }
 
     public ArrayList<Person> getPersons() {
+        PreparedStatement statement;
         ArrayList<Person> persons = new ArrayList<Person>();
         try {
             statement = con.prepareStatement("SELECT * FROM Person");
@@ -164,12 +166,13 @@ public class Query {
     }
 
     public void createAllAppointments(Map<String, Person> persons, Map<String, Location> locations) {
-
+        PreparedStatement statement;
         HashMap<String, ArrayList<Attending>> appointments = new HashMap<String, ArrayList<Attending>>();
         try {
             // Get the relations
             statement = con.prepareStatement("SELECT * FROM AppointmentRel");
             ResultSet rs = statement.executeQuery();
+            rs.first();
             // Builds the map of all the appointment participants
             System.out.println("About to iterate over resultSet");
             while (rs.next()) {
@@ -179,6 +182,7 @@ public class Query {
                     appointments.put(key, new ArrayList<Attending>());
                 }
                 // Adds the newly constructed Attending tuple to the appointments list
+                System.out.println("Adding attending object for: " + rs.getString("Person"));
                 appointments.get(key).add(new Attending(persons.get(rs.getString("Person")), Attending.Status.valueOf(rs.getString("Status"))));
 
             }
@@ -193,13 +197,14 @@ public class Query {
             while (rs.next()) {
                 // Builds the participant arraylist
                 //ArrayList<String> participants = new ArrayList<String>(Arrays.asList(rs.getString("Participants").split(",")));
-                ArrayList<String> participants = new ArrayList<String>();
 
                 String id = rs.getString("ID");
                 Person owner = persons.get(rs.getString("Owner"));
-
+                
+                System.out.println("CREATING APPOINTMENT: " + id);
+                
                 // Constructs the appointment
-                Appointment appointment = new AppointmentImpl(owner, rs.getTimestamp("StartDate"), rs.getTimestamp("EndDate"), rs.getString("Description"), appointments.get(id), participants, locations.get(rs.getString("LocationID")));
+                Appointment appointment = new AppointmentImpl(owner, rs.getTimestamp("StartDate"), rs.getTimestamp("EndDate"), rs.getString("Description"), appointments.get(id), null, locations.get(rs.getString("LocationID")));
                 appointment.setId(id);
                 // Adds this appointment to everyone invited
                 for (Attending other : appointments.get(id)) {
@@ -216,28 +221,36 @@ public class Query {
         Appointment appointment = new AppointmentImpl();
         appointment.clone(newAppointment);
         ResultSet rs;
+        PreparedStatement statement;
 
         try {
-            statement = con.prepareStatement("INSERT INTO Appointment ( owner, start, end, description, location)"
-                    + "VALUES( ?, ?, ?, ?, ? )");
+            statement = con.prepareStatement("INSERT INTO Appointment ( Owner, StartDate, EndDate, Description, LocationID)"
+                    + "VALUES( ?, ?, ?, ?, ? )", PreparedStatement.RETURN_GENERATED_KEYS);
             statement.setString(1, appointment.getOwner().getUsername());
-            statement.setTime(2, new java.sql.Time(appointment.getStart().getTime()));
-            statement.setTime(3, new java.sql.Time(appointment.getEnd().getTime()));
+            statement.setTimestamp(2, new java.sql.Timestamp(appointment.getStart().getTime()));
+            statement.setTimestamp(3, new java.sql.Timestamp(appointment.getEnd().getTime()));
             statement.setString(4, appointment.getDescription());
-            statement.setInt(5, appointment.getLocation().getId());
-            rs = statement.getGeneratedKeys();
+            if (appointment.getLocation() != null) {
+                statement.setInt(5, appointment.getLocation().getId());
+            } else {
+                statement.setNull(5, java.sql.Types.NULL);
+            }
 
-            appointment.setId(rs.getString("ID"));
+            statement.executeUpdate();
+            rs = statement.getGeneratedKeys();
+            rs.first();
+            appointment.setId(rs.getString(1));
+
+            // TODO: Notify & handle invites
+
         } catch (SQLException e) {
-            /*
-             * handle exception
-             */
+            e.printStackTrace();
         }
         return appointment;
     }
 
     public ArrayList<Location> getLocations() {
-
+        PreparedStatement statement;
         ArrayList<Location> locations = new ArrayList<Location>();
         try {
             statement = con.prepareStatement("SELECT * FROM Location "
@@ -246,7 +259,7 @@ public class Query {
             ResultSet rs = statement.executeQuery();
             // Send in hash or arraylist to map up persons?
             while (rs.next()) {
-                
+
                 locations.add(new Room(rs.getInt("LocID"), rs.getString("Location.Description"), rs.getInt("Size"), AbstractLocation.Roomtype.valueOf(rs.getString("RoomType.Description"))));
                 System.out.println("Adding location: " + rs.getInt("LocID"));
             }

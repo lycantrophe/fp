@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author lycantrophe
  */
-public class Person extends Object implements Serializable {
+public class Person implements Serializable {
 
     private String username;
     private String firstname;

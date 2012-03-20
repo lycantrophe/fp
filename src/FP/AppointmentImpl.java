@@ -31,7 +31,7 @@ public class AppointmentImpl implements Appointment {
         this.participants = participants;
         this.location = location;
         this.invited = invited;
-        invited.add(new Attending(owner, Attending.Status.ATTENDING));
+        //invited.add(new Attending(owner, Attending.Status.ATTENDING));
     }
     
     public AppointmentImpl() {
