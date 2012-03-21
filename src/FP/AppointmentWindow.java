@@ -17,7 +17,7 @@ import no.ntnu.fp.net.co.Connection;
 /**
  * @author lycantrophe
  */
-public class AppointmentWindow extends JFrame {
+public class AppointmentWindow extends JFrame implements SelectionInterface {
 
     protected Connection connection;
     protected CalendarWindow parentWindow;
@@ -176,14 +176,16 @@ public class AppointmentWindow extends JFrame {
         return thisId;
     }
 
-    public void getSelectedValues(Location location) {
-        this.location = location;
+    @Override
+    public <T> void getSelectedValues(T location) {
+        this.location = (Location) location;
     }
 
-    public void getSelectedValues(ArrayList<Person> invited) {
-        this.invited = invited;
+    @Override
+    public <T> void getSelectedValues(ArrayList<T> invited) {
+        this.invited = (ArrayList<Person>) invited;
         System.out.println("Invited set to:");
-        for (Person other : invited) {
+        for (Person other : this.invited) {
             System.out.println(other.getUsername());
         }
         System.out.println("That's all, folks!");

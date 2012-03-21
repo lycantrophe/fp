@@ -15,13 +15,11 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import no.ntnu.fp.net.co.Connection;
 
-public class CalendarWindow extends JFrame {
+public class CalendarWindow extends JFrame implements SelectionInterface {
 
     private Connection connection;
     private Person me;
@@ -40,7 +38,7 @@ public class CalendarWindow extends JFrame {
     private labelClickListener cbl;
     private Map<String, Person> allPersons;
     private Map<String, Location> allLocations;
-    private Map<String, Appointment> allAppointments;
+    private ArrayList<String> selectedPersons;
     private JList notifications;
     private DefaultListModel listModel;
     private JScrollPane listScrollPane;
@@ -50,6 +48,8 @@ public class CalendarWindow extends JFrame {
         me = (Person) Server.Deserialize(connection.receive());
         allPersons = (HashMap<String, Person>) Server.Deserialize(connection.receive());
         allLocations = (HashMap<String, Location>) Server.Deserialize(connection.receive());
+        selectedPersons = new ArrayList<String>();
+        selectedPersons.add(me.getUsername());
         today = Calendar.getInstance();
         this.connection = connection;
         cbl = new labelClickListener(this);
@@ -94,25 +94,26 @@ public class CalendarWindow extends JFrame {
             System.out.println("I do exist! Yes I can " + me.getUsername());
         }
         Appointment appointment;
-        // TODO: Implement getAppointments properly
-        for (String appId : me.getAppointmentIds()) {
-            System.out.println("Appointment ID: " + appId);
-            appointment = me.getAppointment(appId);
+        for (String person : selectedPersons) {
+            for (String appId : allPersons.get(person).getAppointmentIds()) {
+                System.out.println("Appointment ID: " + appId);
+                appointment = allPersons.get(person).getAppointment(appId);
+                
+                System.out.println("Start: " + appointment.getStart().toString());
+                System.out.println("First: " + firstday.getTime().toString());
+                System.out.println("Last: " + lastday.getTime().toString());
 
-            System.out.println("Start: " + appointment.getStart().toString());
-            System.out.println("First: " + firstday.getTime().toString());
-            System.out.println("Last: " + lastday.getTime().toString());
-
-            if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
-                dayToPaint.setTime(appointment.getStart());
-                JLabel toBeAdded = new JLabel();
-                toBeAdded.setText(appointment.getId() + " " + appointment.getStart().toString() + " - "
-                        + appointment.getDescription());
-                toBeAdded.setName(appointment.getId());
-                toBeAdded.addMouseListener(cbl);
-                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
-                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].validate();
-                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].repaint();
+                if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
+                    dayToPaint.setTime(appointment.getStart());
+                    JLabel toBeAdded = new JLabel();
+                    toBeAdded.setText(appointment.getId() + " " + appointment.getStart().toString() + " - "
+                            + appointment.getDescription());
+                    toBeAdded.setName(appointment.getId());
+                    toBeAdded.addMouseListener(cbl);
+                    dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
+                    dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].validate();
+                    dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].repaint();
+                }
             }
         }
     }
@@ -267,14 +268,26 @@ public class CalendarWindow extends JFrame {
         return !(date.before(start) || date.after(end));
     }
 
+    @Override
+    public <T> void getSelectedValues(ArrayList<T> selected) {
+        this.selectedPersons = (ArrayList<String>) selected;
+        if( !selectedPersons.contains(me.getUsername())) selectedPersons.add(me.getUsername());
+        mapAppointments();
+    }
+
+    @Override
+    public <T> void getSelectedValues(T t) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class labelClickListener extends MouseAdapter {
 
-               private CalendarWindow calWin;
+        private CalendarWindow calWin;
 
         public labelClickListener(CalendarWindow calWin) {
             this.calWin = calWin;
         }
-        
+
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 // HACK
@@ -340,18 +353,26 @@ public class CalendarWindow extends JFrame {
 
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == addCalendarButton) {
-                /*
-                 * TODO: Implement addCalendar
-                 */
+
+                ArrayList<String> arr = new ArrayList<String>();
+                for (String other : allPersons.keySet()) {
+                    arr.add(other);
+                    System.out.println("Adding " + other + "to invSel");
+                }
+                SelectList invList = new SelectList(arr, parent);
+                invList.pack();
+                invList.setVisible(true);
+                invList.setLocationRelativeTo(null);
+
             } else if (ae.getSource() == newEventButton) {
                 AppointmentWindow appWin = new AppointmentWindow(connection, me, allPersons, allLocations, parent);
                 appWin.pack();
                 appWin.setVisible(true);
                 appWin.setLocationRelativeTo(null);
             } else if (ae.getSource() == removeCalendarButton) {
-                /*
-                 * TODO: Implement removeCalendar()
-                 */
+                selectedPersons.clear();
+                selectedPersons.add(me.getUsername());
+                mapAppointments();
             } else if (ae.getSource() == getNotificationsButton) {
                 try {
                     connection.send("getNotifications");

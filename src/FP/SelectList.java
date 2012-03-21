@@ -22,9 +22,9 @@ public class SelectList extends JFrame {
     private JButton buttonDone;
     private JButton buttonCancel;
     private selectAction al;
-    private AppointmentWindow parentWin;
+    private SelectionInterface parentWin;
 
-    public <T> SelectList(Collection<T> arglist, AppointmentWindow parentWin) {
+    public <T> SelectList(Collection<T> arglist, SelectionInterface parentWin) {
 
         this.parentWin = parentWin;
         JPanel panel = new JPanel();
@@ -60,12 +60,14 @@ public class SelectList extends JFrame {
             if (ae.getSource() == buttonDone && !sel.isEmpty()) {
                 //TODO: Implement announcment of selected values in this list
 
-                if (sel.get(0).getClass().getName().equals("FP.Person")) {
-                    ArrayList<Person> p = new ArrayList<Person>();
+               // if (sel.get(0).getClass().getName().equals("FP.Person")) {
+                if(!sel.get(0).getClass().getName().equals("FP.Location")){
+                    //ArrayList<Person> p = new ArrayList<Person>();
+             /*       ArrayList<Object> p = new ArrayList<Object>();
                     for( Object o : sel ){
-                        p.add((Person) o);
-                    }
-                    parentWin.getSelectedValues(p);
+                        p.add((Person) o); 
+                    } */
+                    parentWin.getSelectedValues(sel);
                 } else {
                     parentWin.getSelectedValues((Location) (sel.get(0)));
                 }
@@ -83,6 +85,8 @@ public class SelectList extends JFrame {
                 s = ((Person) o).getFirstname() + " " + ((Person) o).getSurname() + " [" + ((Person) o).getUsername() + "]";
             } else if (o.getClass().getName().equals("FP.Room")) {
                 s = ((Room) o).getType() + " - " + ((Room) o).getName();
+            } else {
+                s = (String) o;
             }
             setText(s);
 
