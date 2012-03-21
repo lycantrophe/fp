@@ -70,6 +70,7 @@ public class ConnectionImpl extends AbstractConnection {
         this.remoteAddress = remoteAddress;
         this.remotePort = remotePort;
         this.nextSequenceNo = nextSequenceNo;
+        usedPorts.put(myPort, Boolean.TRUE);
         this.state = State.ESTABLISHED;
     }
 
@@ -113,6 +114,7 @@ public class ConnectionImpl extends AbstractConnection {
             simplySendPacket(first);
             this.state = State.SYN_SENT;
         } catch (ClException ex) {
+            ex.printStackTrace();
         }
 
         /*
@@ -123,14 +125,14 @@ public class ConnectionImpl extends AbstractConnection {
          */
         KtnDatagram second = receiveAck();
 
-        if (second != null) {
-        } else if (second == null) {
-            second = receiveAck();
-        }
-
         /*
          * SYN_ACK received, connection set up
+         * Settings new port and ACKing
          */
+
+        this.remotePort = second.getSrc_port();
+        this.remoteAddress = second.getSrc_addr();
+        
         if (second != null && second.getFlag() == Flag.SYN_ACK) {
             sendAck(second, false);
             this.state = State.ESTABLISHED;
@@ -139,8 +141,6 @@ public class ConnectionImpl extends AbstractConnection {
             throw new IOException("Timeout: Never received SYN_ACK");
         }
 
-        this.remotePort = second.getSrc_port();
-        this.remoteAddress = second.getSrc_addr();
     }
 
     /**
@@ -151,7 +151,7 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public Connection accept() throws IOException, SocketTimeoutException {
 
-        if( this.state != State.CLOSED ) {
+        if (this.state != State.CLOSED) {
             throw new IllegalStateException("Cannot accept new connections, connection not closed");
         }
         this.state = State.LISTEN;
@@ -159,8 +159,12 @@ public class ConnectionImpl extends AbstractConnection {
         /*
          * Loops and listens for a connection until it gets one
          */
+
+        int oldMyPort = myPort;
+
         KtnDatagram firstPacket = null;
         while (this.state == State.LISTEN) {
+            System.out.println("RECEIVING PACKET");
             firstPacket = receivePacket(true);
             if (firstPacket != null && firstPacket.getFlag() == Flag.SYN) {
                 /*
@@ -178,39 +182,28 @@ public class ConnectionImpl extends AbstractConnection {
             e.printStackTrace();
         }
 
+        int newPort = 1024 + (int) (Math.random() * 64000);
+        while (usedPorts.containsKey(newPort)) {
+            newPort = 1024 + (int) (Math.random() * 64000);
+        }
+        myPort = newPort;
+
+        System.out.println("ABOUT TO SEND SYN_ACK");
         sendAck(firstPacket, true);
 
         /*
-         * Waits for the ACK to return. Gives it two attempts before it shuts
-         * down
+         * Waits for the ACK to return.
          */
         KtnDatagram ack = receiveAck();
 
-        /*
-         * TODO: Figure out a way to handle sequence numbers
-         */
-        if (ack == null) {
-            ack = receiveAck();
-        }
-        /*
-         * Should consider a better behaviour
-         */
-        if (ack == null) {
-            this.state = State.CLOSED;
-            return accept();
-        } else if (ack != null) {
-            this.state = State.ESTABLISHED;
-            this.remotePort = ack.getSrc_port();
-            this.remoteAddress = ack.getSrc_addr();
-        }
-
-        usedPorts.put(myPort, Boolean.TRUE);
+        this.state = State.ESTABLISHED;
 
         /*
          * Reserves the port and creates the connection
          */
-        Connection newConn = new ConnectionImpl(myAddress, myPort, remoteAddress, remotePort, nextSequenceNo);
+        Connection newConn = new ConnectionImpl(myAddress, newPort, remoteAddress, remotePort, nextSequenceNo);
         this.state = State.CLOSED;
+        this.myPort = oldMyPort;
         return newConn;
     }
 
@@ -250,14 +243,13 @@ public class ConnectionImpl extends AbstractConnection {
         /*
          * Receives the packet and returns an ACK
          */
-        
+
         if (this.state != State.ESTABLISHED) {
             throw new IllegalStateException("Tried to receive in a non-connected state");
         }
         KtnDatagram packet = null;
 
         packet = receivePacket(false);
-
 
         /*
          * Tests the incoming packages for validity
@@ -276,7 +268,7 @@ public class ConnectionImpl extends AbstractConnection {
      */
     public void close() throws IOException {
 
-        if (this.state == State.CLOSED || this.state == State.SYN_SENT || this.state == State.SYN_RCVD ) {
+        if (this.state == State.CLOSED || this.state == State.SYN_SENT || this.state == State.SYN_RCVD) {
             throw new IllegalStateException("Cannot close from this state");
         }
 
@@ -328,7 +320,6 @@ public class ConnectionImpl extends AbstractConnection {
             this.disconnectSeqNo = fin.getSeq_nr();
 
         } catch (ClException ex) {
-            
         }
 
         KtnDatagram ack = receiveAck();
@@ -358,11 +349,11 @@ public class ConnectionImpl extends AbstractConnection {
             }
         }
         this.state = State.TIME_WAIT;
-        
+
         // Wait grace period
-        
+
         this.state = State.CLOSED;
-        
+
     }
 
     /**
