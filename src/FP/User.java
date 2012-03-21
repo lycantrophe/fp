@@ -19,7 +19,7 @@ import no.ntnu.fp.net.co.Connection;
  */
 public class User implements Serializable {
 
-    private static Map<String, Person> personMap = Collections.synchronizedMap(new HashMap<String, Person>());
+    //private static Map<String, Person> personMap = Collections.synchronizedMap(new HashMap<String, Person>());
     private Person me;
     private Connection connection;
 
@@ -30,8 +30,8 @@ public class User implements Serializable {
      *
      */
     public User(String myPerson) {
-        me = personMap.get(myPerson);
-        if( me == null ){
+        me = Server.persons.get(myPerson);
+        if (me == null) {
             System.out.println("Holy fuck me not gotten from personMap: " + myPerson);
         }
     }
@@ -116,9 +116,15 @@ public class User implements Serializable {
 
     // TODO: Consider merging decline/accept
     public boolean declineAppointment(String id) {
-        Appointment appointment = me.getAppointment(id);
+        Appointment appointment = Server.persons.get(me.getUsername()).getAppointment(id);
         ArrayList<Attending> invited = appointment.getInvited();
+        
+        if( invited != null)
+        System.out.println("Size of invited array: " + invited.size() );
+        else System.out.println("Invited array empty!");
 
+        if( appointment == null ) System.out.println("APPOINTMENT IS NULL");
+        
         if (appointment == null) {
             return false;
         }
@@ -161,11 +167,11 @@ public class User implements Serializable {
      * @param newAppointment Appointment object with changes
      */
     public void editAppointment(String oldId, Appointment newAppointment) {
-        
+
         Appointment appointment = me.getAppointment(oldId);
-        
+
         ArrayList<Person> oldInvited = appointment.getInvitedPersons();
-        
+
         appointment.clone(newAppointment);
 
         ArrayList<Person> newInvited = newAppointment.getInvitedPersons();
@@ -199,7 +205,13 @@ public class User implements Serializable {
         connection.send(notification);
     }
 
-    public static void addPerson(Person person) {
-        personMap.put(person.getUsername(), person);
+    public ArrayList<String> getNotifications() {
+        return me.getNotifications();
     }
+
+    /*
+     * public static void addPerson(Person person) {
+     * personMap.put(person.getUsername(), person);
+    }
+     */
 }

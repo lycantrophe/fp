@@ -107,6 +107,7 @@ public class Query {
             if (person != null) {
                 statement.setString(3, person.getUsername());
             }
+            statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -123,6 +124,8 @@ public class Query {
                 statement.setString(2, appointment.getId());
                 statement.setString(3, Attending.Status.PENDING.toString());
                 statement.executeUpdate();
+                Server.persons.get(other.getUsername()).notify("You have been invited to an event created by " + appointment.getOwner().getUsername() + "::" + appointment.getId());
+                Server.persons.get(other.getUsername()).addAppointment(appointment);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -192,8 +195,6 @@ public class Query {
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                // Builds the participant arraylist
-                //ArrayList<String> participants = new ArrayList<String>(Arrays.asList(rs.getString("Participants").split(",")));
 
                 String id = rs.getString("ID");
                 Person owner = persons.get(rs.getString("Owner"));
@@ -205,7 +206,7 @@ public class Query {
                 appointment.setId(id);
                 // Adds this appointment to everyone invited
                 for (Attending other : appointments.get(id)) {
-                    other.getPerson().addAppointment(appointment);
+                    Server.persons.get(other.getPerson().getUsername()).addAppointment(appointment);
                 }
 
             }

@@ -53,9 +53,9 @@ public class ServerThread extends Thread {
                     }
 
                     if (cmd.equalsIgnoreCase("delete")) {
-                        
+
                         cmd = connection.receive();
-                        
+
                         if (user.deleteAppointment(cmd)) {
                             // takes: delete :: [id]
                             // TODO: Validate input
@@ -65,17 +65,13 @@ public class ServerThread extends Thread {
                         }
 
                     } else if (cmd.equalsIgnoreCase("decline")) {
-
                         String id = connection.receive();
-                        if (user.declineAppointment(id)) {
-
-                            // takes: decline :: [id]
-                            connection.send("decline ACK");
-                        } else {
-                            connection.send("decline FAIL");
-                        }
-
-
+                        user.declineAppointment(id);
+                        
+                    } else if (cmd.equalsIgnoreCase("accept")) {
+                        String id = connection.receive();
+                        user.acceptAppointment(id);
+                        
                     } else if (cmd.equalsIgnoreCase("edit")) {
                         cmd = connection.receive();
                         Appointment newAppointment = null;
@@ -90,15 +86,17 @@ public class ServerThread extends Thread {
                         } else {
                             throw new AssertionError("Could not get proper object from client");
                         }
-                        
-                    }
-                    else if( cmd.equalsIgnoreCase("create")) {
+
+                    } else if (cmd.equalsIgnoreCase("create")) {
                         System.out.println("Starting creation routine");
                         try {
-                            query.createAppointment((Appointment)Server.Deserialize(connection.receive()));
+                            Appointment app = query.createAppointment((Appointment) Server.Deserialize(connection.receive()));
+                            connection.send(Server.Serialize(app));
                         } catch (ClassNotFoundException ex) {
                             ex.printStackTrace();
                         }
+                    } else if (cmd.equalsIgnoreCase("getNotifications")) {
+                        connection.send(Server.Serialize(Server.persons.get(uname).getNotifications()));
                     }
                     /*
                      * do things
@@ -111,18 +109,20 @@ public class ServerThread extends Thread {
                 // TODO: Wrong login handling.
                 connection.send("Try again!");
             }
-
-
         } catch (EOFException e) {
             query.close();
             Log.writeToLog("Got close request (EOFException), closing.",
                     "TestServer");
             try {
                 connection.close();
+
+
             } catch (IOException ex) {
                 Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
                 ex.printStackTrace();
             }
+
+
         } catch (ConnectException e) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
             e.printStackTrace();

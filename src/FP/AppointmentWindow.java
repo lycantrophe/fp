@@ -20,6 +20,7 @@ import no.ntnu.fp.net.co.Connection;
 public class AppointmentWindow extends JFrame {
 
     protected Connection connection;
+    protected CalendarWindow parentWindow;
     protected JTextField textDescription;
     protected JSpinner spinnerStartDate, spinnerEndDate;
     protected JButton buttonInvite, buttonSave, buttonCancel, buttonLocation;
@@ -30,9 +31,10 @@ public class AppointmentWindow extends JFrame {
     protected Location location;
     protected appWinListener al;
 
-    public AppointmentWindow(Connection connection, Person me, Map<String, Person> allPersons, Map<String, Location> allLocations) {
+    public AppointmentWindow(Connection connection, Person me, Map<String, Person> allPersons, Map<String, Location> allLocations, CalendarWindow parentWindow) {
 
         this.connection = connection;
+        this.parentWindow = parentWindow;
         this.me = me;
         locations = allLocations;
         persons = allPersons;
@@ -136,8 +138,8 @@ public class AppointmentWindow extends JFrame {
         String description = textDescription.getText();
 
         ArrayList<Attending> attending = new ArrayList<Attending>();
-        
-            System.out.println("Adding to attending array:");
+
+        System.out.println("Adding to attending array:");
         for (Person other : invited) {
             attending.add(new Attending(other));
             System.out.println(other.getUsername());
@@ -151,6 +153,7 @@ public class AppointmentWindow extends JFrame {
             System.out.println("Sending object for creation");
             connection.send(serialized);
             appointment = (Appointment) Server.Deserialize(connection.receive());
+            parentWindow.addNewAppointment( appointment );
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -159,14 +162,14 @@ public class AppointmentWindow extends JFrame {
         // Add appointment to calendar
     }
 
-    public void getSelectedValues(Location location ) {
+    public void getSelectedValues(Location location) {
         this.location = location;
     }
 
     public void getSelectedValues(ArrayList<Person> invited) {
         this.invited = invited;
         System.out.println("Invited set to:");
-        for( Person other : invited ) {
+        for (Person other : invited) {
             System.out.println(other.getUsername());
         }
         System.out.println("That's all, folks!");
@@ -175,10 +178,11 @@ public class AppointmentWindow extends JFrame {
     protected class appWinListener implements ActionListener {
 
         private AppointmentWindow par;
-        public appWinListener( AppointmentWindow par) {
+
+        public appWinListener(AppointmentWindow par) {
             this.par = par;
         }
-        
+
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == buttonInvite) {
 

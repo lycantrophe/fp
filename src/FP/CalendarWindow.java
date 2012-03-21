@@ -8,26 +8,21 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.ConnectException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import no.ntnu.fp.net.co.Connection;
 
 public class CalendarWindow extends JFrame {
 
-    /*
-     * delete 2. constructor!
-     */
     private Connection connection;
     private Person me;
     private JPanel leftArrowPanel, rightArrowPanel, topPanel, bottomPanel,
@@ -49,18 +44,6 @@ public class CalendarWindow extends JFrame {
     private DefaultListModel listModel;
     private JScrollPane listScrollPane;
 
-    public CalendarWindow() {
-        today = Calendar.getInstance();
-
-        setLayout(new GridBagLayout());
-        gridConst = new GridBagConstraints();
-
-        arrowListener = new ArrowButtonListener();
-        buttonListener = new ButtonListener();
-
-        drawWindow();
-    }
-
     public CalendarWindow(Connection connection) throws IOException, ClassNotFoundException {
 
         me = (Person) Server.Deserialize(connection.receive());
@@ -73,10 +56,14 @@ public class CalendarWindow extends JFrame {
         gridConst = new GridBagConstraints();
 
         arrowListener = new ArrowButtonListener();
-        buttonListener = new ButtonListener();
+        buttonListener = new ButtonListener(this);
 
         drawWindow();
         mapAppointments();
+
+        for (String notification : me.getNotifications()) {
+            listModel.addElement(notification);
+        }
         //c.add(Calendar.DATE, -(c.get(Calendar.DAY_OF_WEEK) + i));
 
     }
@@ -96,6 +83,7 @@ public class CalendarWindow extends JFrame {
         Calendar lastday = Calendar.getInstance();
         lastday.setTime(firstday.getTime());
         lastday.add(Calendar.DATE, 6);
+        Calendar dayToPaint = Calendar.getInstance();
 
         if (me == null) {
             System.out.println("I DON'T EXIST");
@@ -113,11 +101,13 @@ public class CalendarWindow extends JFrame {
             System.out.println("Last: " + lastday.getTime().toString());
 
             if (isWithinRange(appointment.getStart(), firstday.getTime(), lastday.getTime())) {
-                firstday.setTime(appointment.getStart());
+                dayToPaint.setTime(appointment.getStart());
                 JLabel toBeAdded = new JLabel();
                 toBeAdded.setText(appointment.getStart().toString() + " - "
                         + appointment.getDescription());
-                dayColumns[firstday.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
+                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].add(toBeAdded);
+                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].validate();
+                dayColumns[dayToPaint.get(Calendar.DAY_OF_WEEK) - 1].repaint();
             }
         }
     }
@@ -194,7 +184,7 @@ public class CalendarWindow extends JFrame {
 
         listModel = new DefaultListModel();
         notifications = new JList(listModel);
-        notifications.addMouseListener(new DoubleClickListener());
+        notifications.addMouseListener(new DoubleClickListener(this));
         listScrollPane = new JScrollPane(notifications);
         listScrollPane.setPreferredSize(new Dimension(500, 60));
         newEventButton = new JButton("New Appointment");
@@ -203,6 +193,7 @@ public class CalendarWindow extends JFrame {
         addCalendarButton.addActionListener(buttonListener);
         removeCalendarButton = new JButton("Remove Calendar");
         removeCalendarButton.addActionListener(buttonListener);
+
         bottomPanel = new JPanel();
         bottomPanel.add(listScrollPane);
         bottomPanel.add(newEventButton);
@@ -217,11 +208,50 @@ public class CalendarWindow extends JFrame {
         add(bottomPanel, gridConst);
     }
 
+    public void addNewAppointment(Appointment newAppointment) {
+        me.addAppointment(newAppointment);
+        mapAppointments();
+
+        try {
+            connection.send("getNotifications");
+            for (String notification :
+                    (ArrayList<String>) Server.Deserialize(connection.receive())) {
+                listModel.addElement(notification);
+            }
+        } catch (ConnectException ex) {
+            Logger.getLogger(CalendarWindow.class.getName()).log(Level.SEVERE,
+                    null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CalendarWindow.class.getName()).log(Level.SEVERE,
+                    null, ex);
+        } catch (ClassNotFoundException e) {
+        }
+
+    }
+
+    public void sendStatusChange(String status, String appid, int index) {
+        try {
+            connection.send(status);
+            connection.send(appid);
+            listModel.remove(index);
+        } catch (ConnectException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private boolean isWithinRange(Date date, Date start, Date end) {
         return !(date.before(start) || date.after(end));
     }
 
     class DoubleClickListener extends MouseAdapter {
+
+        private CalendarWindow calWin;
+
+        public DoubleClickListener(CalendarWindow calWin) {
+            this.calWin = calWin;
+        }
 
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -231,7 +261,7 @@ public class CalendarWindow extends JFrame {
                 Object item = listModel.getElementAt(index);
                 System.out.println(item.toString());
 
-                NotificationWindow notificationWin = new NotificationWindow(item.toString());
+                NotificationWindow notificationWin = new NotificationWindow(item.toString(), calWin, index);
                 notificationWin.setLocationRelativeTo(null);
                 notificationWin.pack();
                 notificationWin.setVisible(true);
@@ -259,7 +289,10 @@ public class CalendarWindow extends JFrame {
      */
     private class ButtonListener implements ActionListener {
 
-        public ButtonListener() {
+        private CalendarWindow parent;
+
+        public ButtonListener(CalendarWindow parent) {
+            this.parent = parent;
         }
 
         public void actionPerformed(ActionEvent ae) {
@@ -268,7 +301,7 @@ public class CalendarWindow extends JFrame {
                  * TODO: Implement addCalendar
                  */
             } else if (ae.getSource() == newEventButton) {
-                AppointmentWindow appWin = new AppointmentWindow(connection, me, allPersons, allLocations);
+                AppointmentWindow appWin = new AppointmentWindow(connection, me, allPersons, allLocations, parent);
                 appWin.pack();
                 appWin.setVisible(true);
                 appWin.setLocationRelativeTo(null);

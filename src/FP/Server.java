@@ -60,7 +60,7 @@ public class Server {
         persons = new HashMap<String, Person>();
         // Get persons
         for (Person other : query.getPersons()) {
-            User.addPerson(other);
+           // User.addPerson(other);
             persons.put(other.getUsername(), other);
         }
 
