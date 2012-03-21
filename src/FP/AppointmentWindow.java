@@ -29,7 +29,9 @@ public class AppointmentWindow extends JFrame {
     protected Map<String, Person> persons;
     protected Person me;
     protected Location location;
+    protected boolean isEdit;
     protected appWinListener al;
+    protected String thisId;
 
     public AppointmentWindow(Connection connection, Person me, Map<String, Person> allPersons, Map<String, Location> allLocations, CalendarWindow parentWindow) {
 
@@ -38,6 +40,7 @@ public class AppointmentWindow extends JFrame {
         this.me = me;
         locations = allLocations;
         persons = allPersons;
+        isEdit = false;
 
         this.invited = new ArrayList<Person>();
 
@@ -132,6 +135,7 @@ public class AppointmentWindow extends JFrame {
     }
 
     public void sendEditAppointment() {
+
         Date startDate = (Date) spinnerStartDate.getValue();
         Date endDate = (Date) spinnerEndDate.getValue();
 
@@ -147,19 +151,29 @@ public class AppointmentWindow extends JFrame {
         // TODO: Handle connection and sending exceptions
         Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, null, location);
         try {
-            String serialized = Server.Serialize(appointment);
+
             System.out.println("Starting create");
-            connection.send("create");
+            if (!isEdit) {
+                connection.send("create");
+            } else {
+                connection.send("edit");
+                appointment.setId(getThisId());
+            }
+            String serialized = Server.Serialize(appointment);
             System.out.println("Sending object for creation");
             connection.send(serialized);
             appointment = (Appointment) Server.Deserialize(connection.receive());
-            parentWindow.addNewAppointment( appointment );
+            parentWindow.addNewAppointment(appointment);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         // Add appointment to calendar
+    }
+
+    private String getThisId() {
+        return thisId;
     }
 
     public void getSelectedValues(Location location) {

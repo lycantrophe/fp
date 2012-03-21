@@ -4,6 +4,7 @@
  */
 package FP;
 
+import java.awt.Container;
 import java.util.Map;
 import no.ntnu.fp.net.co.Connection;
 
@@ -20,9 +21,8 @@ public class EditAppointmentWindow extends AppointmentWindow {
         
         textDescription.setText(appointment.getDescription());
         invited = appointment.getInvitedPersons();
-        //participants = appointment.getParticipants();
-        
-        // TODO: Add support for changing owner
+        location = appointment.getLocation();
+        isEdit = true;
+        thisId = appointment.getId();
     }
-    
 }

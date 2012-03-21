@@ -73,7 +73,7 @@ public class ServerThread extends Thread {
                         user.acceptAppointment(id);
                         
                     } else if (cmd.equalsIgnoreCase("edit")) {
-                        cmd = connection.receive();
+                        //cmd = connection.receive();
                         Appointment newAppointment = null;
                         try {
                             newAppointment = (Appointment) Server.Deserialize(connection.receive());
@@ -82,7 +82,7 @@ public class ServerThread extends Thread {
                             ex.printStackTrace();
                         }
                         if (newAppointment != null) {
-                            user.editAppointment(cmd, newAppointment);
+                            connection.send(Server.Serialize(user.editAppointment(newAppointment)));
                         } else {
                             throw new AssertionError("Could not get proper object from client");
                         }

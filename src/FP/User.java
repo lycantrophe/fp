@@ -166,9 +166,10 @@ public class User implements Serializable {
      * @param appointment Appointment to change
      * @param newAppointment Appointment object with changes
      */
-    public void editAppointment(String oldId, Appointment newAppointment) {
+    public Appointment editAppointment(Appointment newAppointment) {
 
-        Appointment appointment = me.getAppointment(oldId);
+        System.out.println("IN EDITAPP: APPID = " + newAppointment.getId());
+        Appointment appointment = Server.persons.get(me.getUsername()).getAppointment(newAppointment.getId());
 
         ArrayList<Person> oldInvited = appointment.getInvitedPersons();
 
@@ -197,8 +198,11 @@ public class User implements Serializable {
             }
         }
         Query query = new Query();
+        System.out.println("PREPARING QUERY TO EDIT APPOINTMENT");
         query.updateAppointment(appointment, newInvited, oldInvited);
         query.close();
+        
+        return appointment;
     }
 
     public void sendNotification(String notification) throws ConnectException, IOException {

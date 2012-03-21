@@ -36,22 +36,24 @@ public class Query {
 
         PreparedStatement statement;
         try {
-            statement = con.prepareStatement("UPDATE appointment SET start=?, end=?, owner=?, description=?, setLocation=?");
-            statement.setDate(1, new java.sql.Date(appointment.getStart().getTime()));
-            statement.setDate(2, new java.sql.Date(appointment.getEnd().getTime()));
+            statement = con.prepareStatement("UPDATE Appointment SET StartDate=?, EndDate=?, Owner=?, Description=?, LocationID=? WHERE ID = ?");
+            statement.setTimestamp(1, new java.sql.Timestamp(appointment.getStart().getTime()));
+            statement.setTimestamp(2, new java.sql.Timestamp(appointment.getEnd().getTime()));
             statement.setString(3, appointment.getOwner().getUsername());
             statement.setString(4, appointment.getDescription());
+            if( appointment.getLocation() != null )
+            statement.setInt(5, appointment.getLocation().getId());
+            else statement.setNull(5, java.sql.Types.NULL);
+            statement.setString(6, appointment.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
 
         addAppointment(appointment, newParticipants);
 
         try {
-            statement = con.prepareStatement("DELETE FROM appointmentRel WHERE username = ? AND appointmentid = ? )");
+            statement = con.prepareStatement("DELETE FROM AppointmentRel WHERE Username = ? AND ID = ? )");
 
             for (Person other : oldParticipants) {
                 statement.setString(1, other.getUsername());
@@ -59,9 +61,7 @@ public class Query {
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+          e.printStackTrace();
         }
         updateStatus(Attending.Status.PENDING.toString(), appointment, null);
     }
