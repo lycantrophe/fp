@@ -37,16 +37,19 @@ public class Server {
         // server connection instance, listen on port 5555
         Connection server = new ConnectionImpl(5555);
         // each new connection lives in its own instance
-        Connection conn;
+       // Connection conn;
         // TODO: Thread at this point?
 
 
         while (true) {
             try {
-                conn = server.accept();
+                System.out.println("ACCEPTING CONNECTIONS");
+                Connection conn = server.accept();
 
                 Thread thread = new ServerThread(conn);
-                thread.run();
+                System.out.println("About to start thread");
+                thread.start();
+                System.err.println("Thread started");
             } catch (IOException e) {
                 e.printStackTrace();
             }
