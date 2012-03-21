@@ -130,16 +130,17 @@ public class AppointmentWindow extends JFrame {
     }
 
     public void sendEditAppointment() {
-        // Get values somehow
         Date startDate = (Date) spinnerStartDate.getValue();
         Date endDate = (Date) spinnerEndDate.getValue();
-        // TODO: Get values from fields
 
         String description = textDescription.getText();
 
         ArrayList<Attending> attending = new ArrayList<Attending>();
+        
+            System.out.println("Adding to attending array:");
         for (Person other : invited) {
             attending.add(new Attending(other));
+            System.out.println(other.getUsername());
         }
         // TODO: Handle connection and sending exceptions
         Appointment appointment = new AppointmentImpl(me, startDate, endDate, description, attending, null, location);
@@ -164,6 +165,11 @@ public class AppointmentWindow extends JFrame {
 
     public void getSelectedValues(ArrayList<Person> invited) {
         this.invited = invited;
+        System.out.println("Invited set to:");
+        for( Person other : invited ) {
+            System.out.println(other.getUsername());
+        }
+        System.out.println("That's all, folks!");
     }
 
     protected class appWinListener implements ActionListener {

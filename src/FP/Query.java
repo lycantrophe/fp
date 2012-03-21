@@ -108,9 +108,7 @@ public class Query {
                 statement.setString(3, person.getUsername());
             }
         } catch (SQLException e) {
-            /*
-             * Handle exception
-             */
+            e.printStackTrace();
         }
     }
 
@@ -118,7 +116,7 @@ public class Query {
 
         PreparedStatement statement;
         try {
-            statement = con.prepareStatement("INSERT INTO AppointmentRel (Username, Appointmentid, Status ) VALUES ( ?, ?, ? )");
+            statement = con.prepareStatement("INSERT INTO AppointmentRel ( Person, ID, Status ) VALUES ( ?, ?, ? )");
 
             for (Person other : persons) {
                 statement.setString(1, other.getUsername());
@@ -172,7 +170,6 @@ public class Query {
             // Get the relations
             statement = con.prepareStatement("SELECT * FROM AppointmentRel");
             ResultSet rs = statement.executeQuery();
-            rs.first();
             // Builds the map of all the appointment participants
             System.out.println("About to iterate over resultSet");
             while (rs.next()) {
@@ -200,9 +197,9 @@ public class Query {
 
                 String id = rs.getString("ID");
                 Person owner = persons.get(rs.getString("Owner"));
-                
+
                 System.out.println("CREATING APPOINTMENT: " + id);
-                
+
                 // Constructs the appointment
                 Appointment appointment = new AppointmentImpl(owner, rs.getTimestamp("StartDate"), rs.getTimestamp("EndDate"), rs.getString("Description"), appointments.get(id), null, locations.get(rs.getString("LocationID")));
                 appointment.setId(id);
@@ -210,6 +207,7 @@ public class Query {
                 for (Attending other : appointments.get(id)) {
                     other.getPerson().addAppointment(appointment);
                 }
+
             }
 
         } catch (SQLException e) {
@@ -222,6 +220,7 @@ public class Query {
         appointment.clone(newAppointment);
         ResultSet rs;
         PreparedStatement statement;
+        String key;
 
         try {
             statement = con.prepareStatement("INSERT INTO Appointment ( Owner, StartDate, EndDate, Description, LocationID)"
@@ -239,9 +238,10 @@ public class Query {
             statement.executeUpdate();
             rs = statement.getGeneratedKeys();
             rs.first();
-            appointment.setId(rs.getString(1));
+            key = rs.getString(1);
+            appointment.setId(key);
 
-            // TODO: Notify & handle invites
+            addAppointment(appointment, appointment.getInvitedPersons());
 
         } catch (SQLException e) {
             e.printStackTrace();

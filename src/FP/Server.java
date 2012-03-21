@@ -88,10 +88,8 @@ public class Server {
 
     public static Object Deserialize(String input) throws IOException, ClassNotFoundException {
 
-        BASE64Decoder decode = new BASE64Decoder();;
-        
+        BASE64Decoder decode = new BASE64Decoder();
         ByteArrayInputStream bis = new ByteArrayInputStream(decode.decodeBuffer(input));
-        
         ObjectInputStream ois = new ObjectInputStream(bis);
         return ois.readObject();
     }

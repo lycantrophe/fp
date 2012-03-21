@@ -56,7 +56,7 @@ public class AppointmentImpl implements Appointment {
         this.description = appointment.getDescription();
         this.owner = appointment.getOwner();
         this.location = appointment.getLocation();
-        this.participants = appointment.getParticipants();
+        this.invited = appointment.getInvited();
     }
 
     public Date getStart() {
