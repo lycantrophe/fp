@@ -51,6 +51,7 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
         selectedPersons = new ArrayList<String>();
         selectedPersons.add(me.getUsername());
         today = Calendar.getInstance();
+        today.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
         this.connection = connection;
         cbl = new labelClickListener(this);
 
@@ -74,15 +75,14 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
         labelWeek.setText("Week " + today.get(Calendar.WEEK_OF_YEAR));
         labelYear.setText("" + today.get(Calendar.YEAR));
 
-        for (JPanel panel : dayColumns) {
-            panel.removeAll();
-            panel.validate();
-            panel.repaint();
+        for (int i = 0; i < 7; i++) {
+            dayColumns[i].removeAll();
+            dayColumns[i].add(new JLabel(dayNames[i]));
+            dayColumns[i].validate();
+            dayColumns[i].repaint();
         }
 
-        Calendar firstday = Calendar.getInstance();
-        firstday.setTime(today.getTime());
-        firstday.add(Calendar.DATE, -(today.get(Calendar.DAY_OF_WEEK) + 1));
+        Calendar firstday = today;
         Calendar lastday = Calendar.getInstance();
         lastday.setTime(firstday.getTime());
         lastday.add(Calendar.DATE, 6);
@@ -233,7 +233,7 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
     }
 
     public void addNewAppointment(Appointment newAppointment) {
-        me.addAppointment(newAppointment);
+        allPersons.get(me.getUsername()).addAppointment(newAppointment);
         mapAppointments();
 
         try {

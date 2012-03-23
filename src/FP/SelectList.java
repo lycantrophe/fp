@@ -61,7 +61,7 @@ public class SelectList extends JFrame {
                 //TODO: Implement announcment of selected values in this list
 
                // if (sel.get(0).getClass().getName().equals("FP.Person")) {
-                if(!sel.get(0).getClass().getName().equals("FP.Location")){
+                if(!sel.get(0).getClass().getName().equals("FP.Room")){
                     //ArrayList<Person> p = new ArrayList<Person>();
              /*       ArrayList<Object> p = new ArrayList<Object>();
                     for( Object o : sel ){

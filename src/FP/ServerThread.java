@@ -39,10 +39,13 @@ public class ServerThread extends Thread {
                 User user = new User(uname);
                 user.bind(connection);
                 // Sends "me" and (hopefully) all structures connected to "me"
+                System.out.println("Sending person object");
                 connection.send(Server.Serialize(user.initialSend()));
 
                 // Sends other needed data structures
+                System.out.println("Sending persons hash");
                 connection.send(Server.Serialize(Server.persons));
+                System.out.println("Sending location hash");
                 connection.send(Server.Serialize(Server.locations));
 
                 String cmd;
