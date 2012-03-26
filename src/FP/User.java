@@ -212,6 +212,11 @@ public class User implements Serializable {
     public ArrayList<String> getNotifications() {
         return me.getNotifications();
     }
+    
+        
+    public void removeNotification( String message ) {
+        me.removeNotification(message);
+    }
 
     /*
      * public static void addPerson(Person person) {

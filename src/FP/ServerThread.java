@@ -100,6 +100,8 @@ public class ServerThread extends Thread {
                         }
                     } else if (cmd.equalsIgnoreCase("getNotifications")) {
                         connection.send(Server.Serialize(Server.persons.get(uname).getNotifications()));
+                    } else if (cmd.equalsIgnoreCase("removeNotification")) {
+                        user.removeNotification(connection.receive());
                     }
                     /*
                      * do things

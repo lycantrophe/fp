@@ -127,4 +127,8 @@ public class Person implements Serializable {
     public void setSurname(String surname) {
         this.surname = surname;
     }
+        
+    public void removeNotification( String message ) {
+        Server.persons.get(username).notifications.remove(message);
+    }
 }

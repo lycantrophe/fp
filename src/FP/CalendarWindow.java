@@ -15,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import no.ntnu.fp.net.co.Connection;
@@ -98,7 +100,7 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
             for (String appId : allPersons.get(person).getAppointmentIds()) {
                 System.out.println("Appointment ID: " + appId);
                 appointment = allPersons.get(person).getAppointment(appId);
-                
+
                 System.out.println("Start: " + appointment.getStart().toString());
                 System.out.println("First: " + firstday.getTime().toString());
                 System.out.println("Last: " + lastday.getTime().toString());
@@ -271,7 +273,9 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
     @Override
     public <T> void getSelectedValues(ArrayList<T> selected) {
         this.selectedPersons = (ArrayList<String>) selected;
-        if( !selectedPersons.contains(me.getUsername())) selectedPersons.add(me.getUsername());
+        if (!selectedPersons.contains(me.getUsername())) {
+            selectedPersons.add(me.getUsername());
+        }
         mapAppointments();
     }
 
@@ -316,7 +320,16 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
                 System.out.println("Double clicked on Item " + index);
                 Object item = listModel.getElementAt(index);
                 System.out.println(item.toString());
-
+                
+                try {
+                    connection.send("removeNotification");
+                    connection.send(item.toString());
+                } catch (ConnectException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                
                 NotificationWindow notificationWin = new NotificationWindow(item.toString(), calWin, index);
                 notificationWin.setLocationRelativeTo(null);
                 notificationWin.pack();
