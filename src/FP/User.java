@@ -108,7 +108,7 @@ public class User implements Serializable {
         query.deleteAppointment(appointment);
         for (Attending other : invited) {
             other.getPerson().deleteAppointment(id);
-            other.getPerson().notify("Appointment" + id + "deleted");
+            other.getPerson().notify("Appointment " + id + " deleted");
         }
         query.close();
         return true;

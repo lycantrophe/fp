@@ -74,7 +74,10 @@ public class Person implements Serializable {
         // getNextNotification()? If so, use queue instead of arraylist.
         return notifications;
     }
-
+    
+    public void removeAppointment( String id ) {
+        appointments.remove(id);
+    }
     public void notify(String notification) {
         notifications.add(notification);
         // TODO: Rewrite notification support

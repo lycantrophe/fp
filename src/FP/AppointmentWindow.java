@@ -24,6 +24,7 @@ public class AppointmentWindow extends JFrame implements SelectionInterface {
     protected JTextField textDescription;
     protected JSpinner spinnerStartDate, spinnerEndDate;
     protected JButton buttonInvite, buttonSave, buttonCancel, buttonLocation;
+    protected JPanel buttons, container;
     protected ArrayList<Person> invited;
     protected Map<String, Location> locations;
     protected Map<String, Person> persons;
@@ -113,14 +114,14 @@ public class AppointmentWindow extends JFrame implements SelectionInterface {
         c.gridy = 4;
         big.add(par, c);
 
-        JPanel buttons = new JPanel();
+        buttons = new JPanel();
         buttons.add(buttonSave);
         buttons.add(buttonCancel);
 
         buttonCancel.addActionListener(al);
         buttonSave.addActionListener(al);
-
-        JPanel container = new JPanel();
+        
+        container = new JPanel();
         container.setLayout(new GridBagLayout());
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.gridx = 0;
@@ -172,6 +173,16 @@ public class AppointmentWindow extends JFrame implements SelectionInterface {
         // Add appointment to calendar
     }
 
+    public void sendDeleteAppointment() {
+        try {
+            connection.send("delete");
+            connection.send(getThisId());
+            parentWindow.removeAppointment(getThisId());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String getThisId() {
         return thisId;
     }
@@ -193,7 +204,7 @@ public class AppointmentWindow extends JFrame implements SelectionInterface {
 
     protected class appWinListener implements ActionListener {
 
-        private AppointmentWindow par;
+        protected AppointmentWindow par;
 
         public appWinListener(AppointmentWindow par) {
             this.par = par;

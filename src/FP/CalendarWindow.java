@@ -265,6 +265,11 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
             ex.printStackTrace();
         }
     }
+    
+    public void removeAppointment( String id ){
+        allPersons.get(me.getUsername()).removeAppointment(id);
+        me = allPersons.get(me.getUsername());
+    }
 
     private boolean isWithinRange(Date date, Date start, Date end) {
         return !(date.before(start) || date.after(end));
@@ -296,11 +301,17 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
             if (e.getClickCount() == 2) {
                 // HACK
                 String appid = e.getComponent().getName();
-                EditAppointmentWindow editAppWin = new EditAppointmentWindow(connection, me, me.getAppointment(appid), allPersons, allLocations, calWin);
-                editAppWin.pack();
-                editAppWin.setVisible(true);
-                editAppWin.setLocationRelativeTo(null);
-
+                if (me.getAppointment(appid).getOwner().getUsername().equals(me.getUsername())) {
+                    EditAppointmentWindow editAppWin = new EditAppointmentWindow(connection, me, me.getAppointment(appid), allPersons, allLocations, calWin);
+                    editAppWin.pack();
+                    editAppWin.setVisible(true);
+                    editAppWin.setLocationRelativeTo(null);
+                } else {
+                    NotificationWindow notWin = new NotificationWindow("Event owned by " + me.getAppointment(appid).getOwner().getUsername(), calWin, 0);
+                    notWin.pack();
+                    notWin.setVisible(true);
+                    notWin.setLocationRelativeTo(null);
+                }
             }
         }
     }
@@ -320,7 +331,7 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
                 System.out.println("Double clicked on Item " + index);
                 Object item = listModel.getElementAt(index);
                 System.out.println(item.toString());
-                
+
                 try {
                     connection.send("removeNotification");
                     connection.send(item.toString());
@@ -329,7 +340,7 @@ public class CalendarWindow extends JFrame implements SelectionInterface {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                
+
                 NotificationWindow notificationWin = new NotificationWindow(item.toString(), calWin, index);
                 notificationWin.setLocationRelativeTo(null);
                 notificationWin.pack();

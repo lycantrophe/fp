@@ -58,23 +58,17 @@ public class ServerThread extends Thread {
                     if (cmd.equalsIgnoreCase("delete")) {
 
                         cmd = connection.receive();
-
-                        if (user.deleteAppointment(cmd)) {
-                            // takes: delete :: [id]
-                            // TODO: Validate input
-                            connection.send("delete ACK");
-                        } else {
-                            connection.send("delete FAIL");
-                        }
+                        user.deleteAppointment(cmd);
+                        // takes: delete :: [id]
 
                     } else if (cmd.equalsIgnoreCase("decline")) {
                         String id = connection.receive();
                         user.declineAppointment(id);
-                        
+
                     } else if (cmd.equalsIgnoreCase("accept")) {
                         String id = connection.receive();
                         user.acceptAppointment(id);
-                        
+
                     } else if (cmd.equalsIgnoreCase("edit")) {
                         //cmd = connection.receive();
                         Appointment newAppointment = null;

@@ -11,15 +11,21 @@ import javax.swing.border.EtchedBorder;
 public class NotificationWindow extends JFrame {
 
     private JLabel notification;
-    private String appId;
+    private String appId = null;
     private JButton accept, decline;
     private CalendarWindow calWin;
     private int index;
-    
+
     public NotificationWindow(String message, CalendarWindow calWin, int index) {
         this.calWin = calWin;
         this.index = index;
-        appId = (message.split("::"))[1];
+        try {
+            appId = (message.split("::"))[1];
+        } catch (NullPointerException e) {
+            // Do nothing. Just catches cases where this split should give nothing.
+        } catch ( ArrayIndexOutOfBoundsException e ) {
+            // Do nothing. 
+        }
         drawWindow(message);
     }
 
@@ -39,14 +45,17 @@ public class NotificationWindow extends JFrame {
 
         ButtonAction al = new ButtonAction(calWin);
 
-        accept = new JButton("Accept");
-        accept.addActionListener(al);
-        decline = new JButton("Decline");
-        decline.addActionListener(al);
-        JPanel pnl = new JPanel();
-        pnl.add(accept);
-        pnl.add(decline);
-        add(pnl, c);
+        if (appId != null) {
+
+            accept = new JButton("Accept");
+            accept.addActionListener(al);
+            decline = new JButton("Decline");
+            decline.addActionListener(al);
+            JPanel pnl = new JPanel();
+            pnl.add(accept);
+            pnl.add(decline);
+            add(pnl, c);
+        }
     }
 
     class ButtonAction implements ActionListener {
